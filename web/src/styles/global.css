@@ -74,8 +74,11 @@ p { margin: 0; }
 .divider { height: var(--stroke-divider); background: var(--color-border-subtle); }
 .intro { display: flex; gap: var(--space-12); align-items: center; }
 .intro__text { flex: 1; white-space: pre-line; }
-.intro__art { display: flex; flex-direction: column; align-items: center; color: var(--color-illustration-accent); }
+.intro__art { position: relative; flex: 0 0 auto; color: var(--color-illustration-accent); }
 .intro__art img { width: 110px; height: 110px; }
+/* "안녕~" sits inside the speech bubble drawn in cat-greeting.png (bubble centre ≈ 30.5% / 39.5% of the artwork) */
+.intro__hello { position: absolute; left: 30.5%; top: 39.5%; transform: translate(-50%, -50%); display: block; width: 20px; line-height: 0; }
+.intro__hello svg { width: 100%; height: auto; }
 
 /* ---------- Buttons ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; border-radius: var(--radius-button); transition: background-color 150ms ease; }
