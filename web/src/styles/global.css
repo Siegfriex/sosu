@@ -209,7 +209,49 @@ textarea.field__input { resize: vertical; min-height: 72px; }
 @media (prefers-reduced-motion: reduce) {
   .runner__cat, .runner__shadow, .runner__line, .runner__dust { animation: none; }
   .runner__line, .runner__dust { opacity: 0; }
+  .poker__body, .poker__paw, .poker__tap { animation: none; }
+  .poker__tap { opacity: 0; }
   :root { --press-scale: 1; --press-out: 0ms; }
+}
+
+/* ---------- Kneading cat (delivery / success / error) ---------- */
+.poker { position: relative; aspect-ratio: 1; color: var(--color-illustration-accent); }
+.poker__body, .poker__paw, .poker__fx { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* paw/head boundaries traced from cat-delivery.png (720² source, in %) */
+.poker__body { clip-path: polygon(0 0, 100% 0, 100% 72.2%, 85% 72.2%, 79.9% 69.2%, 72.2% 68.5%, 65.3% 68.9%, 60% 70.6%, 58% 73.6%, 58% 100%, 48.9% 100%, 48.9% 70.1%, 46.5% 67.2%, 40.3% 63.6%, 36.4% 60.5%, 28.5% 60%, 22.9% 62.5%, 19.4% 66%, 19.4% 100%, 0 100%); transform-origin: 50% 60%; animation: poke-body 1600ms infinite; }
+.poker__paw--l { clip-path: polygon(19.4% 66%, 22.9% 62.5%, 28.5% 60%, 36.4% 60.5%, 40.3% 63.6%, 46.5% 67.2%, 48.9% 70.1%, 48.9% 100%, 19.4% 100%); transform-origin: 47% 69%; animation: poke-l 1600ms infinite; }
+.poker__paw--r { clip-path: polygon(58% 73.6%, 60% 70.6%, 65.3% 68.9%, 72.2% 68.5%, 79.9% 69.2%, 85% 72.2%, 85.4% 100%, 58% 100%); transform-origin: 60% 72%; animation: poke-r 1600ms infinite; }
+.poker__fx { overflow: visible; }
+.poker__tap { opacity: 0; transform-box: fill-box; transform-origin: 50% 0; animation: tap-mark 1600ms infinite; }
+.poker__tap--r { animation-delay: 800ms; }
+
+/* one paw per half-cycle: 0–8% anticipation (lift, ease-in) · 8–18% press (ease-in, fast) · 18–26% hold + squash · 26–46% return (ease-out) */
+@keyframes poke-l {
+  0%   { transform: translateY(0) rotate(0deg) scaleY(1); animation-timing-function: cubic-bezier(.5, 0, .8, .5); }
+  8%   { transform: translateY(-1.6%) rotate(2deg) scaleY(1.02); animation-timing-function: cubic-bezier(.7, 0, 1, .6); }
+  18%  { transform: translateY(3.2%) rotate(-4deg) scaleY(.96); animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+  26%  { transform: translateY(3%) rotate(-3.5deg) scaleY(.97); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  46%, 100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+}
+@keyframes poke-r {
+  0%, 50% { transform: translateY(0) rotate(0deg) scaleY(1); animation-timing-function: cubic-bezier(.5, 0, .8, .5); }
+  58%  { transform: translateY(-1.6%) rotate(-2deg) scaleY(1.02); animation-timing-function: cubic-bezier(.7, 0, 1, .6); }
+  68%  { transform: translateY(3.2%) rotate(4deg) scaleY(.96); animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+  76%  { transform: translateY(3%) rotate(3.5deg) scaleY(.97); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  96%, 100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+}
+@keyframes poke-body {
+  0%   { transform: translateY(0) rotate(0deg); animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+  18%  { transform: translateY(.9%) rotate(-1.8deg); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  46%  { transform: translateY(0) rotate(0deg); animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+  68%  { transform: translateY(.9%) rotate(1.8deg); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  96%, 100% { transform: translateY(0) rotate(0deg); }
+}
+@keyframes tap-mark {
+  0%, 16% { opacity: 0; transform: scale(.4) translateY(-6px); }
+  20%  { opacity: .9; transform: scale(1) translateY(0); }
+  34%  { opacity: 0; transform: scale(1.15) translateY(4px); }
+  100% { opacity: 0; }
 }
 
 /* ---------- Loading / Error ---------- */

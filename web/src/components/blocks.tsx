@@ -115,11 +115,28 @@ export function LoadingState({ workflow }: { workflow: 'survey' | 'prescription'
 }
 
 /* ---------- ErrorState (28:557) ---------- */
+// Kneading cat built from one drawing: body + each front paw as clip-path layers of the same image.
+// Paws poke down alternately (anticipation → fast press → hold → eased return); body leans into each press.
+// Fill colour == dark page background, so the seam under a moving paw never shows. Static under prefers-reduced-motion.
+export function PokingCat({ className = '' }: { className?: string }) {
+  return (
+    <div className={`poker ${className}`.trim()} aria-hidden>
+      <img className="poker__body" src={catDelivery} alt="" />
+      <img className="poker__paw poker__paw--l" src={catDelivery} alt="" />
+      <img className="poker__paw poker__paw--r" src={catDelivery} alt="" />
+      <svg className="poker__fx" viewBox="0 0 720 720" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="6">
+        <g className="poker__tap poker__tap--l"><path d="M228 668 l-14 14" /><path d="M262 676 v18" /><path d="M300 668 l14 12" /></g>
+        <g className="poker__tap poker__tap--r"><path d="M470 700 l-14 12" /><path d="M512 706 v14" /><path d="M556 698 l14 12" /></g>
+      </svg>
+    </div>
+  );
+}
+
 export function ErrorState({ workflow, kind, onRetry, onReset }: { workflow: 'survey' | 'prescription'; kind: 'timeout' | 'error'; onRetry: () => void; onReset: () => void }) {
   const noun = workflow === 'survey' ? '진단' : '처방';
   return (
     <div className="state state--error" role="alert">
-      <img className="state__art state__art--sm" src={catDelivery} alt="" />
+      <PokingCat className="state__art state__art--sm" />
       <h2 className="t-section">{kind === 'timeout' ? `${noun}이 예상보다 오래 걸리고 있어요` : `${noun}을 완료하지 못했어요`}</h2>
       <p className="state__msg state__meta t-body">{'입력하신 내용은 그대로 남아 있어요.\n다시 시도해 주세요.'}</p>
       <div className="state__actions">
@@ -159,7 +176,7 @@ export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, on
   const submitting = state === 'submitting';
   return (
     <form className="delivery" noValidate onSubmit={(e) => { e.preventDefault(); if (!submitting) onSubmit(); }}>
-      <img className="delivery__art" src={catDelivery} alt="" />
+      <PokingCat className="delivery__art" />
       <p className="delivery__msg t-body">{`${docName}를 제공해 드리기 위해\n이메일 주소를 입력해 주세요.`}</p>
       <div className="delivery__form">
         <EmailField value={email} onChange={onEmail} disabled={submitting} ariaLabel="이메일 주소"
@@ -177,7 +194,7 @@ export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, on
 export function DeliverySuccess({ docName, email, onReset }: { docName: '진단서' | '처방전'; email: string; onReset: () => void }) {
   return (
     <div className="delivery">
-      <img className="delivery__art" src={catDelivery} alt="" />
+      <PokingCat className="delivery__art" />
       <h2 className="t-section">{docName}를 보냈어요</h2>
       <p className="delivery__msg state__meta t-body">{`${email} 으로 PDF를 보내드렸어요.\n메일함을 확인해 주세요.`}</p>
       <InlineMessage tone="success">전송 완료</InlineMessage>
