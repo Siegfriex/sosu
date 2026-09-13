@@ -83,11 +83,30 @@ function useStageSequence(): StageIndex {
   return stage;
 }
 
+// Gallop cycle built from one drawing: anticipation → launch (stretch) → apex → fall → landing (squash) → recoil,
+// with trailing speed lines, dust puffs on contact and a contact shadow. Static under prefers-reduced-motion.
+function RunningCat() {
+  return (
+    <div className="runner" aria-hidden>
+      <svg className="runner__fx" viewBox="0 0 260 180" fill="none" stroke="currentColor" strokeLinecap="round">
+        <path className="runner__line runner__line--1" d="M214 84 H252" strokeWidth="3" />
+        <path className="runner__line runner__line--2" d="M222 98 H256" strokeWidth="2.5" />
+        <path className="runner__line runner__line--3" d="M210 112 H244" strokeWidth="2" />
+        <circle className="runner__dust runner__dust--1" cx="206" cy="128" r="5" fill="currentColor" stroke="none" />
+        <circle className="runner__dust runner__dust--2" cx="220" cy="124" r="3.5" fill="currentColor" stroke="none" />
+        <circle className="runner__dust runner__dust--3" cx="196" cy="133" r="2.5" fill="currentColor" stroke="none" />
+      </svg>
+      <span className="runner__shadow" />
+      <img className="runner__cat" src={catLoading} alt="" />
+    </div>
+  );
+}
+
 export function LoadingState({ workflow }: { workflow: 'survey' | 'prescription' }) {
   const stage = useStageSequence();
   return (
     <div className="state">
-      <img className="state__art" src={catLoading} alt="" />
+      <RunningCat />
       <StagedProgress stage={stage} />
       <p className="state__msg t-body">{workflow === 'survey' ? '소수냥이가 열심히 진단중입니다.\n조금만 기다려주세요!' : '소수냥이가 열심히 처방중입니다.\n조금만 기다려주세요!'}</p>
       <p className="state__meta t-micro">평균 소요시간 : 약 1분</p>
