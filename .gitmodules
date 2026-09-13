@@ -1,0 +1,4 @@
+[submodule "SOSU_py"]
+	path = SOSU_py
+	url = https://github.com/Siegfriex/SOSU_py.git
+	branch = main
