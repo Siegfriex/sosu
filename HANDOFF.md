@@ -73,6 +73,18 @@ npm run verify                             # 위 4개 순차 실행 = FRONTEND_B
 `blocks.tsx` (FileUploader, UploadedFileItem, StagedProgress, LoadingState, ErrorState, ReportSection, ReportBrandTable, EmailDeliveryForm, DeliverySuccess, ExampleThumbnail, Lightbox).
 prop 이름은 Figma variant property와 동일하게 유지할 것 (state/size/selection/layout/emphasis/workflow/kind).
 
+### 3.4 인터랙션 모델 (모든 pressable 공통, `global.css` "interaction model")
+| 상태 | 규칙 |
+|---|---|
+| rest | 토큰 기본색 |
+| hover | **`@media (hover: hover) and (pointer: fine)`에서만** — 터치 기기에서는 hover 자체가 없음(탭 후 색이 남는 sticky hover 방지). 선택된 칩·disabled에는 hover 없음 |
+| pressed (`:active`) | 누르는 순간 **즉시**(`--press-in: 0ms`) pressed 색 + `scale(.985)` — 손가락/마우스를 떼기 전까지만 |
+| release | `--press-out: 180ms`, `cubic-bezier(.2,.8,.3,1)`로 rest(또는 데스크톱 hover)로 복귀 |
+| focus | 키보드에서만 `:focus-visible` 링 |
+| disabled / loading | hover·press 없음, `cursor: not-allowed` |
+| reduced motion | scale·transition 제거 |
+적용 대상: Button(primary/secondary) · ChoiceChip · TopTab(비선택 탭만) · file remove · ExampleThumbnail · dropzone · Lightbox close. `-webkit-tap-highlight-color: transparent`, `touch-action: manipulation`.
+
 ## 4. 상태 머신 · 라우트 · 리셋
 
 ```
