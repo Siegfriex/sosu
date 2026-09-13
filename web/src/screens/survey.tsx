@@ -35,7 +35,9 @@ export function SurveyStep() {
       <ContentCard title={TITLE}>
         {step === 1 && (
           <div className="intro">
-            <p className="intro__text t-body">{'안녕하세요!\n당신과 앞으로 함께 달려줄\n릴스 컨설턴트 소수입니다.\n\n총 20문항으로 구성돼 있으며, 답변해 주시면\n브랜드에 맞는 릴스 방향을 진단해드릴게요.'}</p>
+            <p className="intro__text t-body">
+              {'안녕하세요!\n당신과 앞으로 함께 달려줄\n릴스 컨설턴트 '}<strong>소수</strong>{'입니다.\n\n총 20문항으로 구성돼 있으며, 답변해 주시면\n브랜드에 맞는 릴스 방향을 진단해드릴게요.'}
+            </p>
             <div className="intro__art" aria-hidden>
               <img src={catGreeting} alt="" />
               <span className="intro__hello" dangerouslySetInnerHTML={{ __html: helloSvg }} />

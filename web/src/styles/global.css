@@ -17,6 +17,8 @@ body {
   background: var(--color-bg-app-light);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  word-break: keep-all;        /* Korean wraps at word boundaries, never mid-word */
+  overflow-wrap: anywhere;     /* …but a single over-long token still breaks instead of overflowing */
 }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; border: 0; background: none; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -79,12 +81,16 @@ p { margin: 0; }
 .card > p { white-space: pre-line; }
 .section-header { display: flex; flex-direction: column; gap: var(--space-12); }
 .divider { height: var(--stroke-divider); background: var(--color-border-subtle); }
-.intro { display: flex; gap: var(--space-12); align-items: center; }
-.intro__text { flex: 1; white-space: pre-line; }
-.intro__art { position: relative; flex: 0 0 auto; color: var(--color-illustration-accent); }
-.intro__art img { width: 110px; height: 110px; }
+/* Intro follows legacy 1:1197: text block keeps its natural line breaks (no mid-word wrapping); the 162px cat artwork
+   floats over the card's top-right corner (frame top 66px above the text, 9px past the content edge), overlapping the title gap. */
+.intro { position: relative; margin-top: var(--space-16); }
+.intro__text { white-space: pre-line; max-width: 240px; }
+.intro__text strong { font-weight: 700; }
+.intro__art { position: absolute; top: -78px; right: -9px; width: 162px; height: 162px; color: var(--color-illustration-accent); pointer-events: none; }
+.intro__art img { width: 100%; height: 100%; }
+@media (max-width: 339px) { .intro__art { width: 140px; height: 140px; top: -66px; } }
 /* "안녕~" sits inside the speech bubble drawn in cat-greeting.png (bubble centre ≈ 30.5% / 39.5% of the artwork) */
-.intro__hello { position: absolute; left: 30.5%; top: 39.5%; transform: translate(-50%, -50%); display: block; width: 20px; line-height: 0; }
+.intro__hello { position: absolute; left: 30.5%; top: 39.5%; transform: translate(-50%, -50%); display: block; width: 18%; line-height: 0; }
 .intro__hello svg { width: 100%; height: auto; }
 
 /* ---------- Buttons ---------- */

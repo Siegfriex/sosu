@@ -73,6 +73,10 @@ npm run verify                             # 위 4개 순차 실행 = FRONTEND_B
 `blocks.tsx` (FileUploader, UploadedFileItem, StagedProgress, LoadingState, ErrorState, ReportSection, ReportBrandTable, EmailDeliveryForm, DeliverySuccess, ExampleThumbnail, Lightbox).
 prop 이름은 Figma variant property와 동일하게 유지할 것 (state/size/selection/layout/emphasis/workflow/kind).
 
+### 3.3b 인트로 블록 (SURVEY_STEP_1) — 원본 1:1197 기준
+Figma 캐노니컬 33:255는 텍스트와 아트를 flex 한 줄에 넣어 텍스트가 어절 중간에서 꺾이고 아트가 축소·중앙 정렬되는 오류가 있음(컴포넌트화 과정 산물). 코드는 **legacy 1:1197**을 따른다: 텍스트 13px/1.6, 줄바꿈 고정(`pre-line`, 자연 폭 ≤ 240px), "소수"만 Bold, 고양이 아트 162×162를 카드 우상단에 절대 배치(텍스트 상단 −78px, 콘텐츠 우측 −9px, 320 이하 140px), "안녕~"은 말풍선 중심(30.5%/39.5%)에 아트 폭 18%로 오버레이. Figma 33:255는 오너가 원본대로 수정 필요.
+전역 `word-break: keep-all` + `overflow-wrap: anywhere` — 한글은 어절 단위로만 줄바꿈.
+
 ### 3.4 인터랙션 모델 (모든 pressable 공통, `global.css` "interaction model")
 | 상태 | 규칙 |
 |---|---|
