@@ -53,6 +53,8 @@ export function parseEnvelope(status: number, text: string, sentRequestId?: stri
 export function parseEnvelopeFull(status: number, text: string, sentRequestId?: string): ParsedSuccess {
   let body: unknown;
   try { body = JSON.parse(text); } catch {
+    // Vercel WAF rate limit answers with a plain-text 429 (no SOSU envelope).
+    if (status === 429) throw new ApiError('error', 'rate limited at the edge', { code: 'RATE_LIMITED', retryable: true, httpStatus: 429, requestId: sentRequestId });
     // e.g. a proxy's HTML 504 page: still a timeout for the user, never a success.
     throw new ApiError(status === 504 ? 'timeout' : 'error', 'malformed response (not JSON)', { code: status === 504 ? 'MODEL_TIMEOUT' : 'MALFORMED_RESPONSE', retryable: true, httpStatus: status, requestId: sentRequestId });
   }
@@ -75,6 +77,12 @@ export function parseEnvelopeFull(status: number, text: string, sentRequestId?: 
   throw new ApiError('error', 'malformed response envelope', { code: 'MALFORMED_RESPONSE', retryable: true, httpStatus: status, requestId: sentRequestId });
 }
 
+async function apiReachable(): Promise<boolean> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 4_000);
+  try { return (await fetch(`${API_BASE_URL}/api/v1/health`, { signal: ctrl.signal })).ok; } catch { return false; } finally { clearTimeout(t); }
+}
+
 async function post(path: string, form: FormData | string, signal?: AbortSignal, timeoutMs = CLIENT_TIMEOUT_MS): Promise<ParsedSuccess> {
   const requestId = newRequestId();
   const ctrl = new AbortController();
@@ -92,6 +100,9 @@ async function post(path: string, form: FormData | string, signal?: AbortSignal,
     } catch (e) {
       if (timedOut) throw new ApiError('timeout', 'client timeout', { code: 'CLIENT_TIMEOUT', retryable: true, requestId });
       if (signal?.aborted) throw new DOMException('aborted', 'AbortError'); // user cancellation / unmount
+      // The edge WAF 429 carries no CORS headers, so the browser reports it as a network failure. If the API is
+      // otherwise reachable, treat the blocked POST as rate limited instead of a generic network error.
+      if (await apiReachable()) throw new ApiError('error', 'request blocked (edge rate limit)', { code: 'RATE_LIMITED', retryable: true, requestId });
       throw new ApiError('error', e instanceof Error ? e.message : 'network error', { code: 'NETWORK', retryable: true, requestId });
     }
     let text: string;

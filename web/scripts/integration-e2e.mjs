@@ -255,6 +255,16 @@ await check('INT-D13 no silent mock fallback: API unreachable → error screen, 
   return p;
 });
 
+await freshPage();
+await check('INT-D14 edge WAF 429 (plain text, no CORS headers) → "요청이 많아요" rate-limited screen, not a report', async () => {
+  await page.setRequestInterception(true);
+  page.on('request', (req) => (req.url().startsWith(`${API}/api/v1/diagnosis`) && req.method() === 'POST'
+    ? req.respond({ status: 429, contentType: 'text/plain', body: 'Too Many Requests' }) : req.continue()));
+  await fillSurvey({ withChoices: false }); await byText('진단'); await waitPath('/error', 20000); await shot('D14_waf429', false);
+  const t = await text(); assert(t.includes('요청이 많아요'), 'rate-limited copy not shown');
+  assert(!String(await path()).endsWith('/result'), 'reached result');
+});
+
 /* ================= PRESCRIPTION ================= */
 console.log('\n[PRESCRIPTION]');
 await freshPage();

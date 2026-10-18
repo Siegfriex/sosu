@@ -60,6 +60,7 @@ await check('success envelope parsed → data; adapters reject malformed data', 
     out.html502 = grab(() => window.m.parseEnvelope(502, '<html>Bad gateway</html>'));
     out.html504 = grab(() => window.m.parseEnvelope(504, '<html>Gateway timeout</html>'));
     out.okFalseNoError = grab(() => window.m.parseEnvelope(500, JSON.stringify({ ok: false })));
+    out.edge429 = grab(() => window.m.parseEnvelope(429, 'Too Many Requests'));
     return out;
   }, fixtures.diagnosis);
   assertEq(r.data, 'ok', 'success');
@@ -67,6 +68,7 @@ await check('success envelope parsed → data; adapters reject malformed data', 
   assertEq(r.missingStrengths, err, 'missing strengths'); assertEq(r.twoPriorities, err, '2 priorities'); assertEq(r.noData, err, 'ok without data');
   assertEq(r.html, err, 'non-JSON 200 is an error, not success'); assertEq(r.html502, err, 'non-JSON 502');
   assertEq(r.html504, { name: 'ApiError', kind: 'timeout', code: 'MODEL_TIMEOUT' }, 'non-JSON 504'); assertEq(r.okFalseNoError, err, 'ok:false without error');
+  assertEq(r.edge429, { name: 'ApiError', kind: 'error', code: 'RATE_LIMITED' }, 'plain-text 429 from the Vercel WAF');
 });
 await check(`all ${fixtures.errors.length} error fixtures → kind/code/retryable/request_id`, async () => {
   const r = await run((errs, status) => errs.map(({ name, body }) => { try { window.m.parseEnvelope(status[body.error.code], JSON.stringify(body)); return { name, ok: true }; } catch (e) { return { name, kind: e.kind, code: e.code, retryable: e.retryable, requestId: e.requestId, httpStatus: e.httpStatus }; } }), fixtures.errors, STATUS);
