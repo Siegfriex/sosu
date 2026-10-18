@@ -1,22 +1,48 @@
-# SOSU web (canonical UI preview)
+# SOSU web
 
-Vite + React + TypeScript. Design source of truth: Figma `ejRfXQERdNsBWbKYEdemRB` pages `00_Foundations` … `06_Handoff`.
+Vite 8 + React 19 + TypeScript + react-router 7. Production: <https://sosu-rosy.vercel.app> (Vercel project root `web/`).
+Design source of truth: the Figma file `ejRfXQERdNsBWbKYEdemRB`, pages `00_Foundations` … `06_Handoff`.
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173
-npm run verify       # typecheck + tokens:check + e2e (44) + test:media (6) — the frozen baseline gate
+npm run dev                 # http://localhost:5173 — talks to VITE_API_BASE_URL (default http://127.0.0.1:8000)
+VITE_API_MODE=mock npm run dev   # offline UI with the in-browser mock
 ```
-`e2e` / `test:media` start their own server on :5199 (`BASE_URL=…` to reuse one). Screenshots → `scripts/shots/` (gitignored).
 
-- `src/styles/tokens.css` — generated 1:1 from Figma Variables by `scripts/gen_tokens.py` (`npm run tokens`, `npm run tokens:check`). Do not edit by hand.
-- `src/styles/global.css` — the 10 Text Styles (`.t-*`) + component styles. Font: SUITE Variable self-hosted (`public/fonts/`) → Noto Sans KR (Google Fonts) fallback.
-- `src/data/questions.ts` — question model (06_Handoff §M). Choice answers are stored as option **codes**, text answers verbatim.
-- `src/state/workflows.tsx` — independent survey / prescription slices, memory + sessionStorage, reset semantics.
-- `src/api/client.ts` — the only API entry point screens use (`api = mock` until `/contracts` lands). `errors.ts` (`ApiError` kinds), `validation.ts`, `mock.ts` (`?fail=error|timeout`, `?fixture=long` on a generating route).
-- `src/media/` — client-side image budget utilities (`prepareProductImage` ≤ 1.25 MB, `prepareInsightImages` 3 × ≤ 900 KB). Not wired into the UI yet.
-- Routes mirror the state machine: `/survey/step/1..3 → /survey/upload → /survey/generating → /survey/result → /survey/delivery → /survey/delivered`, `/survey/error`; `/prescription → …`.
+## Structure
 
-Loading stages are a presentation-only timer sequence, not a backend protocol.
+| Path | Role |
+|---|---|
+| `src/api/` | `client.ts` is the only API entry point for screens: `http` by default, `mock` only when `VITE_API_MODE=mock`. `http.ts` handles multipart and envelope parsing, `adapters.ts` maps the contract to view models, `errors.ts` defines typed `ApiError` kinds |
+| `src/state/workflows.tsx` | Independent survey and prescription state machines. State lives in memory plus sessionStorage; file binaries stay in memory only |
+| `src/data/questions.ts` | Question model. Choice answers are stored as contract option **codes**, never as labels |
+| `src/media/` | Client-side image budgets: product photo ≤ 1.25 MB, insight screenshots 3 × ≤ 900 KB |
+| `src/styles/tokens.css` | Generated 1:1 from Figma Variables (`npm run tokens`). Do not edit by hand |
+| `e2e/` | Playwright suite against the **deployed** site (below) |
+| `scripts/` | Puppeteer harnesses for the local suites. Screenshots go to `scripts/shots/` (gitignored) |
 
-Next phase (not in this preview): real API client behind `client.ts` once `/contracts` exists; PDF / email live in `SOSU_py`.
+- Routes mirror the state machine: `/survey/step/1..3 → upload → generating → result → delivery`, plus `/survey/error`, and the same pattern under `/prescription`.
+- Every error kind has its own screen: `unavailable`, `rate-limited`, `timeout`, `error`, and input errors that return to the form.
+- There is no silent mock fallback. If the API is unreachable, the user sees an error and never a fabricated report.
+
+## Tests
+
+| Command | What it runs | Count |
+|---|---|---|
+| `npm run typecheck` / `lint` / `tokens:check` | tsc, oxlint, Figma token drift | — |
+| `npm run e2e` | UI flows on a mock build (:5199) | 47 |
+| `npm run test:media` | image compression budgets | 6 |
+| `npm run test:adapter` | contract → view-model adapters, error mapping (incl. edge 429) | 12 |
+| `npm run e2e:integration` | real Chrome → production build → real HTTP → FastAPI with a deterministic fake Gemini gateway (:8000/:5197) | 24 |
+| `npm run smoke:prod` | non-billed production checks (health, CORS, bundle) | 10 |
+| `npm run e2e:prod` | **Playwright, production**: free checks | 14 |
+| `SOSU_E2E_PAID=1 npm run e2e:prod` | + 1 live diagnosis and 1 live prescription (billed) | +3 |
+| `SOSU_E2E_WAF=1 npm run e2e:prod` | + edge rate-limit check (empty submits only) | +1 |
+
+**Production Playwright suite (`e2e/`).**
+- A request guard counts every diagnosis or prescription POST that would leave the browser. Budgets are free 0, paid 2, WAF 6, and anything over budget is aborted before it is sent.
+- Error states (503, 502 → retry, 504, plain-text edge 429) are fulfilled inside the browser, so they never reach Gemini or the WAF counter.
+- The paid run feeds the live response to the backend's own Q18 checker (`e2e/tests/q18_check.py`).
+- Optional pins: `E2E_EXPECT_FE_SHA`, `E2E_EXPECT_BE_BUILD`. Override the targets with `E2E_BASE_URL` and `E2E_API`.
+
+Run the local suites one at a time. Do not run `e2e` and `e2e:integration` together.
