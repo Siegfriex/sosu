@@ -16,3 +16,11 @@
 | 출시 후 | [SOSU_PROD_E2E_PLAYWRIGHT.md](SOSU_PROD_E2E_PLAYWRIGHT.md) | 운영 환경 Playwright E2E 결과(무료 14건, 라이브 2건, WAF) |
 
 이 폴더로 옮기면서 문서 안의 커밋 해시와 경로는 작성 당시 값 그대로 두었습니다. 그 뒤 README와 문서 정리 커밋이 배포되었기 때문에 운영 빌드 SHA는 문서에 적힌 값보다 새 값입니다.
+
+## 남은 일 (2026-10-18 마감 기준)
+
+| 항목 | 상태 | 다음 행동 |
+|---|---|---|
+| 리포트 이메일 + 가이드북 PDF 링크 | 코드 배포 완료. 설정이 없어 **꺼져 있음** | 오너가 `SOSU_py/docs/EMAIL_SETUP_GUIDE.md` 를 따라 설정합니다. 진행 상태는 `python3 SOSU_py/scripts/check_email_setup.py` 로 확인합니다 |
+| 메일 화면 고양이 모션 교체 (손·얼굴 분리) | **미착수** | Figma MCP 인증이 완료되지 않음. 디자인은 Figma `BfiDWIgNkLyst263m82VLK` 노드 `46-173`. 현재는 `cat-delivery.png` 한 장에서 앞발 영역을 잘라 움직이는 방식 |
+| 진단 결과가 연속으로 repair 1회를 거침 | 관찰 중 | 운영 라이브 진단 2건이 모두 REPAIRABLE → PASS 였음. 원인 오류 문구는 로그에 남지 않으므로, 필요하면 repair 사유를 로그로 남기도록 추가 |
