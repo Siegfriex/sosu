@@ -1,5 +1,7 @@
 # SOSU — 현황 (2026-09-13)
 
+> **2026-10-18 Stage 1 갱신 — 이 문서의 2026-09-13 서술 중 다음은 더 이상 사실이 아님:** `web/` untracked·FROZEN(mock 전용), `SOSU_py` 미커밋 작업, 백엔드 연동 미착수, 계약 코드 불일치(§4.1), 업로드에 PDF 허용. 현재 상태: 프론트는 기본 `VITE_API_MODE=http`로 FastAPI에 실제 multipart 연동(mock은 명시 시에만), 계약 코드 정렬, 가이드북 지식 계층(gb2-5edea367) 합성 프롬프트 연결, 결정론 fake 서버(`SOSU_py/scripts/serve_fake.py`). 최신 진입점: `SOSU_STAGE1_INTEGRATION_REPORT.md` · `SOSU_STAGE1_TEST_MATRIX.md` · `SOSU_GUIDEBOOK_KNOWLEDGE_REPORT.md` · `SOSU_PHASE2_GEMINI_ACTIVATION.md`. 검증 명령 추가: `npm run test:adapter`, `npm run e2e:integration`(fake API :8000 + preview :5197). **Vercel:** push 전 프로젝트 env에 `VITE_API_MODE=mock` 설정 필요(기본이 http로 바뀜).
+
 > 한 줄: **프론트는 동결(FROZEN) 완료, 백엔드 계약은 `SOSU_py/contracts/`에 v1.0으로 존재(미커밋), 둘 사이 정합 작업이 다음 단계.**
 > 상세 이력·규칙은 `HANDOFF.md`, 동결 보고서는 세션 기록(FREEZE REPORT) 참조.
 

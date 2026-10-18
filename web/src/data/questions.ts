@@ -4,6 +4,7 @@
 
 export type ChoiceLayout = 'grid3' | 'grid2' | 'full';
 
+// Codes = contract ui_option_catalog (SOSU_py/contracts/fixtures/ui_option_catalog.json).
 // Choice answers are stored as stable codes, never as the Korean label.
 export interface ChoiceOption { code: string; label: string }
 const opts = (pairs: [string, string][]): ChoiceOption[] => pairs.map(([code, label]) => ({ code, label }));
@@ -32,7 +33,7 @@ export type Question =
       required?: boolean;
     };
 
-const EMOTIONS = opts([['excitement', '설렘'], ['happiness', '행복'], ['warmth', '따뜻함'], ['healing', '힐링'], ['fun', '재미'], ['specialness', '특별함'], ['touching', '감동'], ['comfort', '위로'], ['other', '기타']]);
+const EMOTIONS = opts([['excitement', '설렘'], ['happiness', '행복'], ['warmth', '따뜻함'], ['healing', '힐링'], ['fun', '재미'], ['specialness', '특별함'], ['moved', '감동'], ['comfort', '위로'], ['other', '기타']]);
 
 export const SECTIONS: Record<1 | 2 | 3, string> = {
   1: '브랜드 기본 정보',
@@ -49,7 +50,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 'q06', number: 6, section: 1, type: 'choice',
     label: '6. 내 제품의 가장 큰 매력은 무엇인가요? *최대 3개 선택',
-    options: opts([['design', '디자인'], ['color', '색감'], ['detail', '디테일'], ['texture', '질감'], ['material', '소재'], ['process', '제작 과정'], ['story', '스토리'], ['scarcity', '희소성'], ['other', '기타']]),
+    options: opts([['design', '디자인'], ['color', '색감'], ['detail', '디테일'], ['texture', '질감'], ['material', '소재'], ['process', '제작 과정'], ['story', '스토리'], ['rarity', '희소성'], ['other', '기타']]),
     layout: 'grid3', selection: 'multiple', maxSelection: 3,
   },
   { id: 'q07', number: 7, section: 1, type: 'text', label: '7. 비슷한 제품과 무엇이 다른가요? *우리 브랜드만의 차별점을 입력해주세요.' },
@@ -58,8 +59,8 @@ export const QUESTIONS: Question[] = [
   {
     id: 'q09', number: 9, section: 2, type: 'choice',
     label: '9. 고객은 왜 이 제품을 사고 싶어 할까요?',
-    options: opts([['aesthetic', '예뻐서'], ['special', '특별해서'], ['self_reward', '나를 위해'], ['gift', '선물하려고'], ['memory', '추억을 간직하려고'], ['decor', '공간을 꾸미려고'], ['unique_ownership', '나만의 것을 갖고 싶어서']]),
-    layout: 'grid2', selection: 'multiple', // OPEN L4: selection mode / max not in source
+    options: opts([['aesthetic', '예뻐서'], ['specialness', '특별해서'], ['self_reward', '나를 위해'], ['gift', '선물하려고'], ['memories', '추억을 간직하려고'], ['space_decor', '공간을 꾸미려고'], ['self_expression', '나만의 것을 갖고 싶어서']]),
+    layout: 'grid2', selection: 'multiple', maxSelection: 3, // contract: max 3
   },
   {
     id: 'q10', number: 10, section: 2, type: 'choice',
@@ -79,20 +80,20 @@ export const QUESTIONS: Question[] = [
   {
     id: 'q16', number: 16, section: 3, type: 'choice',
     label: '16. 지금 인스타그램에서 가장 어려운 점은 무엇인가요?\n*최대 3개 선택',
-    options: opts([['low_views', '조회수가 안 나와요'], ['low_followers', '팔로워가 안 늘어요'], ['content_ideas', '어떤 콘텐츠를 만들지 모르겠어요'], ['filming', '촬영이 어려워요'], ['editing', '편집이 어려워요'], ['consistency', '꾸준히 올리기 어려워요'], ['low_conversion', '구매로 연결되지 않아요'], ['other', '기타']]),
+    options: opts([['low_reach', '조회수가 안 나와요'], ['low_follower_growth', '팔로워가 안 늘어요'], ['ideation', '어떤 콘텐츠를 만들지 모르겠어요'], ['shooting_difficulty', '촬영이 어려워요'], ['editing_difficulty', '편집이 어려워요'], ['consistency_difficulty', '꾸준히 올리기 어려워요'], ['low_conversion', '구매로 연결되지 않아요'], ['other', '기타']]),
     layout: 'full', selection: 'multiple', maxSelection: 3,
   },
   {
     id: 'q17', number: 17, section: 3, type: 'choice',
     label: '17. 지금 어떤 릴스를 주로 올리고 있나요?\n*최대 3개 선택',
-    options: opts([['rarely_post', '거의 안 올려요'], ['finished_product', '완성품 위주'], ['making_process', '제작 과정 위주'], ['photo_video_mix', '사진/영상 혼합'], ['trend_reels', '트렌드 릴스'], ['vlog', '브이로그']]),
+    options: opts([['rarely_post', '거의 안 올려요'], ['finished_product', '완성품 위주'], ['process', '제작 과정 위주'], ['photo_video_mix', '사진/영상 혼합'], ['trend_reels', '트렌드 릴스'], ['vlog', '브이로그']]),
     layout: 'grid2', selection: 'multiple', maxSelection: 3,
   },
   {
     id: 'q18', number: 18, section: 3, type: 'choice',
     label: '18. 릴스에서 얼굴과 목소리를 공개할 수 있나요?',
     options: opts([['yes', '네'], ['no', '아니요'], ['face_only', '얼굴만'], ['voice_only', '목소리만']]),
-    layout: 'grid2', selection: 'single', // OPEN L4
+    layout: 'grid2', selection: 'single', // contract: single code or null
   },
   // Q19: absent in source (OPEN L1) — numbering kept as-is.
   { id: 'q20', number: 20, section: 3, type: 'text', label: '20. 릴스에서 꼭 보여주고 싶은 것이 있다면?' },
@@ -107,3 +108,36 @@ export const STEP_SECTIONS: Record<1 | 2 | 3, Question[]> = {
 // text question → verbatim user input; choice question → array of option codes.
 export type AnswerValue = string | string[];
 export type Answers = Record<string, AnswerValue>;
+
+// Question id → contract SurveyAnswersV1 field (catalog `field` for choice questions, diagnosis.py for text).
+export const ANSWER_FIELDS = {
+  q01: 'q1_brand_name', q02: 'q2_product_category', q03: 'q3_hero_product', q04: 'q4_materials', q05: 'q5_material_reason',
+  q06: 'q6_product_appeals', q07: 'q7_differentiation', q08: 'q8_target_customer', q09: 'q9_purchase_motives',
+  q10: 'q10_desired_emotions', q11: 'q11_brand_attributes', q12: 'q12_avoidance', q13: 'q13_motif', q14: 'q14_primary_message',
+  q15: 'q15_interesting_process', q16: 'q16_pain_points', q17: 'q17_current_formats', q18: 'q18_disclosure', q20: 'q20_must_show',
+} as const;
+
+// Pre-contract codes (stored in sessionStorage by earlier builds) → contract codes, per question.
+export const LEGACY_CODE_MAP: Record<string, Record<string, string>> = {
+  q06: { scarcity: 'rarity', making_process: 'process' },
+  q09: { special: 'specialness', memory: 'memories', decor: 'space_decor', unique_ownership: 'self_expression' },
+  q10: { touching: 'moved' },
+  q11: { touching: 'moved' },
+  q16: { low_views: 'low_reach', low_followers: 'low_follower_growth', content_ideas: 'ideation', filming: 'shooting_difficulty', editing: 'editing_difficulty', consistency: 'consistency_difficulty' },
+  q17: { making_process: 'process' },
+};
+
+/** Maps legacy codes to contract codes, drops unknown codes, enforces max selection. Text answers pass through. */
+export function migrateAnswers(answers: Answers): Answers {
+  const out: Answers = {};
+  for (const [id, v] of Object.entries(answers ?? {})) {
+    const q = QUESTIONS.find((x) => x.id === id);
+    if (!q) continue;
+    if (q.type === 'text') { if (typeof v === 'string') out[id] = v; continue; }
+    if (!Array.isArray(v)) continue;
+    const known = new Set(q.options.map((o) => o.code));
+    const codes = [...new Set(v.map((c) => LEGACY_CODE_MAP[id]?.[c] ?? c).filter((c) => known.has(c)))];
+    out[id] = codes.slice(0, q.selection === 'single' ? 1 : q.maxSelection ?? codes.length);
+  }
+  return out;
+}

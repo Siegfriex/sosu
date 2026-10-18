@@ -30,7 +30,7 @@ export function UploadedFileItem({ file, onRemove }: { file: FileMeta; onRemove:
   );
 }
 
-export function FileUploader({ files, onChange, accept = 'image/jpeg,image/png,application/pdf', max }: { files: FileMeta[]; onChange: (f: FileMeta[]) => void; accept?: string; max?: number }) {
+export function FileUploader({ files, onChange, accept = 'image/jpeg,image/png,image/webp', max }: { files: FileMeta[]; onChange: (f: FileMeta[]) => void; accept?: string; max?: number }) {
   const [drag, setDrag] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const add = (list: FileList | null) => {
@@ -49,11 +49,11 @@ export function FileUploader({ files, onChange, accept = 'image/jpeg,image/png,a
         onDrop={(e) => { e.preventDefault(); setDrag(false); add(e.dataTransfer.files); }}>
         <span className="dropzone__icon" aria-hidden dangerouslySetInnerHTML={{ __html: folderSvg }} />
         <p className="t-body">{drag ? '여기에 놓으면 업로드돼요' : '이미지 및 파일을 업로드하세요.'}</p>
-        <p className="dropzone__hint t-helper">{'파일을 드래그하거나 클릭하여 파일을 선택하세요.\n지원 파일 형식: jpg, png, pdf'}</p>
+        <p className="dropzone__hint t-helper">{`파일을 드래그하거나 클릭하여 파일을 선택하세요.\n지원 파일 형식: jpg, png, webp${max ? ` · 최대 ${max}장` : ''}`}</p>
         <input ref={input} className="sr-only" type="file" tabIndex={-1} aria-label="파일 선택" accept={accept} multiple={!max || max > 1} onChange={(e) => { add(e.target.files); e.target.value = ''; }} />
       </div>
       {files.length > 0 && <div className="file-list">{files.map((f) => <UploadedFileItem key={f.id} file={f} onRemove={() => remove(f.id)} />)}</div>}
-      {state === 'invalid-file' && <InlineMessage tone="error">지원하지 않는 형식의 파일이 있어요. jpg, png{accept.includes('pdf') ? ', pdf' : ''}만 업로드할 수 있어요.</InlineMessage>}
+      {state === 'invalid-file' && <InlineMessage tone="error">지원하지 않는 형식의 파일이 있어요. jpg, png{accept.includes('webp') ? ', webp' : ''}만 업로드할 수 있어요.</InlineMessage>}
     </div>
   );
 }
@@ -150,7 +150,7 @@ export function ErrorState({ workflow, kind, onRetry, onReset }: { workflow: 'su
 /* ---------- Report (30:474 / 30:488 / 30:489) ---------- */
 export function ReportSection({ title, emphasis = 'default', fieldKey, children }: { title: string; emphasis?: 'default' | 'accent'; fieldKey?: string; children: ReactNode }) {
   return (
-    <section className={`report-card${emphasis === 'accent' ? ' report-card--accent' : ''}`} data-field={fieldKey}>
+    <section className={`report-card${emphasis === 'accent' ? ' report-card--accent' : ''}`} data-field={fieldKey} data-section={fieldKey}>
       <div className="report-card__header"><h3 className="report-card__title t-strong">{title}</h3><div className="report-card__rule" /></div>
       <div className="report-card__body t-body-2">{children}</div>
     </section>
@@ -170,18 +170,20 @@ export function ReportBrandTable({ brand }: { brand: { name: string; material: s
 
 /* ---------- EmailDeliveryForm (31:551) + DeliverySuccess (31:474) ---------- */
 export type DeliveryFormState = 'empty' | 'invalid-email' | 'submitting' | 'send-error';
-export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, onReset }:
-  { docName: '진단서' | '처방전'; email: string; onEmail: (v: string) => void; state: DeliveryFormState; onSubmit: () => void; onReset: () => void }) {
-  const valid = isValidEmail(email);
+export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, onReset, unavailable = false }:
+  { docName: '진단서' | '처방전'; email: string; onEmail: (v: string) => void; state: DeliveryFormState; onSubmit: () => void; onReset: () => void; unavailable?: boolean }) {
+  // unavailable: no email backend exists yet (http mode) — never fake a success.
+  const valid = isValidEmail(email) && !unavailable;
   const submitting = state === 'submitting';
   return (
-    <form className="delivery" noValidate onSubmit={(e) => { e.preventDefault(); if (!submitting) onSubmit(); }}>
+    <form className="delivery" noValidate data-delivery={unavailable ? 'unavailable' : 'available'} onSubmit={(e) => { e.preventDefault(); if (!submitting && !unavailable) onSubmit(); }}>
       <PokingCat className="delivery__art" />
       <p className="delivery__msg t-body">{`${docName}를 제공해 드리기 위해\n이메일 주소를 입력해 주세요.`}</p>
       <div className="delivery__form">
         <EmailField value={email} onChange={onEmail} disabled={submitting} ariaLabel="이메일 주소"
           error={state === 'invalid-email' ? '이메일 형식을 확인해 주세요' : null} />
         {state === 'send-error' && <InlineMessage tone="error">메일 전송에 실패했어요. 다시 시도해 주세요.</InlineMessage>}
+        {unavailable && <span className="inline-msg t-helper" role="status" data-delivery-unavailable>이메일 발송 기능은 준비 중입니다. 지금은 결과 화면에서 내용을 확인해 주세요.</span>}
         <div className="delivery__actions">
           <Button type="submit" size="md" state={submitting ? 'loading' : valid ? 'idle' : 'disabled'}>{state === 'send-error' ? '다시 보내기' : `메일로 ${docName} 받기`}</Button>
           <Button variant="secondary" size="md" state={submitting ? 'disabled' : 'idle'} onClick={onReset}>첫 화면으로 돌아가기</Button>

@@ -2,7 +2,7 @@
 // can be imported directly; no API, no UI involved.  npm run test:media
 import { startServer, launchBrowser, createSuite, assert } from './lib/harness.mjs';
 
-const server = await startServer('dev');
+const server = await startServer('dev', { port: 5198 });
 const browser = await launchBrowser();
 const page = await browser.newPage();
 const { check, summary } = createSuite('media');

@@ -1,0 +1,826 @@
+{
+  "contract_version": "1.0",
+  "generated_by": "SOSU_py/scripts/release_shared_contract.py",
+  "diagnosis": {
+    "endpoint": "POST /api/v1/diagnosis",
+    "request": {
+      "contract_version": "1.0",
+      "locale": "ko-KR",
+      "answers": {
+        "q1_brand_name": "모노유리",
+        "q2_product_category": "유리 비즈로 만드는 키링과 작은 오브제",
+        "q3_hero_product": "빛을 받으면 색이 달라 보이는 유리 키링",
+        "q4_materials": "체코 유리비즈, 스테인리스",
+        "q5_material_reason": "빛에 따라 표정이 달라져서",
+        "q6_product_appeals": [
+          "design",
+          "detail",
+          "rarity"
+        ],
+        "q7_differentiation": "같은 색 조합으로 대량 제작하지 않고 매번 조금씩 다르게 만듭니다.",
+        "q8_target_customer": "흔한 캐릭터 제품보다 조금 독특한 소품을 좋아하는 20~30대",
+        "q9_purchase_motives": [
+          "aesthetic",
+          "self_expression"
+        ],
+        "q10_desired_emotions": [
+          "excitement",
+          "specialness"
+        ],
+        "q11_brand_attributes": [
+          "warmth",
+          "specialness"
+        ],
+        "q12_avoidance": "너무 유아적이거나 값싸 보이는 느낌",
+        "q13_motif": "별빛, 물결",
+        "q14_primary_message": "빛을 받았을 때 유리가 반짝이는 것",
+        "q15_interesting_process": "색 조합을 고르고 하나씩 연결하는 과정",
+        "q16_pain_points": [
+          "low_reach",
+          "ideation"
+        ],
+        "q17_current_formats": [
+          "finished_product"
+        ],
+        "q18_disclosure": "face_only",
+        "q20_must_show": "포장하기 전에 햇빛에 비춰보는 장면"
+      }
+    },
+    "success": {
+      "ok": true,
+      "request_id": "fixture-diagnosis-001",
+      "contract_version": "1.0",
+      "data": {
+        "schema_version": "diagnosis.v1",
+        "brand": {
+          "name": "모노유리",
+          "material": "체코 유리비즈와 스테인리스",
+          "product": "빛에 따라 색이 달라 보이는 유리 키링",
+          "keywords": [
+            "빛",
+            "유리 디테일",
+            "개별성",
+            "별빛",
+            "물결"
+          ]
+        },
+        "positioning": {
+          "summary": "빛에 따라 표정이 달라지는, 하나뿐인 작은 유리 오브제",
+          "rationale": "설문에서 디자인·디테일·희소성을 강점으로 선언했고, 이미지에서는 유리 표면의 반사와 미세한 비즈 디테일이 가장 강한 시각 신호로 관찰됩니다. 희소성은 이미지만으로 확인되지 않으므로 '매번 조금씩 다른 색 조합' 제작 과정을 보여줄 때 설득력이 생깁니다."
+        },
+        "strengths": [
+          {
+            "title": "빛에 반응하는 소재감",
+            "description": "정지된 완성품보다 움직임 속에서 유리 반사가 드러날 때 차별점이 선명해집니다. 햇빛 아래에서 제품을 천천히 돌리는 장면이 핵심 자산입니다."
+          },
+          {
+            "title": "하나씩 고르는 색 조합",
+            "description": "투명한 비즈와 탁한 비즈를 섞어 매번 다르게 만드는 과정은 '똑같은 것이 없다'는 희소성을 말이 아닌 장면으로 증명합니다."
+          },
+          {
+            "title": "손끝 디테일",
+            "description": "비즈를 연결하는 손동작 클로즈업은 수공예의 신뢰를 짧은 컷으로 전달합니다."
+          }
+        ],
+        "target": {
+          "summary": "흔한 캐릭터 소품 대신 나만의 작은 오브제를 찾는 20~30대",
+          "description": "예뻐서, 그리고 나만의 것을 갖고 싶어서 구매하는 고객입니다. 설렘과 특별함을 느끼고 싶어 하므로 '세상에 하나뿐인 조합'이라는 메시지가 구매 동기와 직접 맞닿습니다."
+        },
+        "tone": {
+          "keywords": [
+            "따뜻한",
+            "섬세한",
+            "조용한 특별함",
+            "빛"
+          ],
+          "description": "자연광 위주의 밝고 부드러운 색감, 느린 속도감, 과장되지 않은 자막. 유아적이거나 값싸 보이는 인상을 피하기 위해 원색 배경과 빠른 트랜지션은 지양합니다."
+        },
+        "fonts": {
+          "title": "단정한 산세리프, 중간 이상의 굵기",
+          "subtitle": "가독성 높은 산세리프 Regular",
+          "reason": "따뜻함과 특별함을 동시에 전달하려면 장식성이 낮고 여백이 살아 있는 서체가 유리합니다. 둥근 손글씨체는 유아적으로 보일 수 있어 피합니다."
+        },
+        "priorities": [
+          {
+            "rank": 1,
+            "title": "햇빛을 통과하는 유리",
+            "description": "첫 3초 안에 제품을 손으로 움직여 빛 반사와 색 변화를 보여줍니다."
+          },
+          {
+            "rank": 2,
+            "title": "포장 전 햇빛 확인 장면",
+            "description": "반드시 보여주고 싶다고 답한 '포장 전에 햇빛에 비춰보는 장면'을 고정 엔딩 컷으로 사용해 브랜드 시그니처로 만듭니다."
+          },
+          {
+            "rank": 3,
+            "title": "색 조합을 고르는 손",
+            "description": "비즈를 고르고 하나씩 꿰는 과정을 짧게 넣어 '매번 다르다'를 증명합니다."
+          }
+        ],
+        "reel_types": [
+          {
+            "name": "제작 디테일형",
+            "reason": "현재 완성품 위주 콘텐츠에서 보이지 않던 제작 차별점을 보완합니다. 얼굴이 함께 나와도 되므로 작업하는 모습과 손 클로즈업을 섞어 구성합니다."
+          },
+          {
+            "name": "빛 변화 무드형",
+            "reason": "빛에 따라 달라지는 색이 핵심 메시지이므로 BGM과 자막만으로 구성된 짧은 무드 릴스가 조회수 문제에 가장 직접적으로 대응합니다."
+          },
+          {
+            "name": "완성 전후 비교형",
+            "reason": "비즈 더미에서 완성 키링까지의 대비는 아이디어 고갈 없이 반복 제작 가능한 포맷입니다."
+          }
+        ],
+        "structure": {
+          "hook_0_3": "햇빛 아래에서 키링을 천천히 돌리며 색이 바뀌는 순간을 클로즈업. 자막: '빛에 따라 달라지는 한 점'",
+          "body_3_10": "비즈 트레이에서 색을 고르는 손. 자막으로 '같은 조합은 없어요'.",
+          "body_10_20": "하나씩 꿰는 과정 2~3컷, 제작자의 집중한 모습을 짧게 삽입.",
+          "close_20_27": "포장 전 햇빛에 비춰보는 시그니처 장면.",
+          "cta_27_30": "완성 키링 3종 나열 + 자막 '오늘의 조합은 프로필 링크에서'."
+        },
+        "final_guidance": [
+          "목소리 없이도 전달되도록 모든 핵심 메시지는 자막으로 넣습니다.",
+          "제작 과정 릴스를 주 1회 고정 포맷으로 만들어 아이디어 고갈을 줄입니다.",
+          "완성품 사진 릴스는 유지하되, 반드시 빛 반사 컷을 첫 장면으로 배치합니다."
+        ]
+      }
+    },
+    "errors": {
+      "retryable": {
+        "MODEL_TIMEOUT": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-model-timeout",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_TIMEOUT",
+            "message": "모델 응답이 제한 시간 내에 도착하지 않았습니다.",
+            "retryable": true,
+            "details": []
+          }
+        },
+        "MODEL_PROVIDER_ERROR": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-model-provider-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_PROVIDER_ERROR",
+            "message": "모델 제공자 호출에 실패했습니다.",
+            "retryable": true,
+            "details": []
+          }
+        },
+        "MODEL_SCHEMA_ERROR": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-model-schema-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_SCHEMA_ERROR",
+            "message": "모델 출력이 예상 스키마와 일치하지 않습니다.",
+            "retryable": true,
+            "details": [
+              {
+                "loc": [
+                  "priorities"
+                ],
+                "msg": "List should have at least 3 items"
+              }
+            ]
+          }
+        },
+        "MODEL_CONTENT_ERROR": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-model-content-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_CONTENT_ERROR",
+            "message": "모델이 사용 가능한 내용을 생성하지 못했습니다.",
+            "retryable": true,
+            "details": [
+              {
+                "finish_reason": "SAFETY"
+              }
+            ]
+          }
+        },
+        "REPAIR_FAILED": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-repair-failed",
+          "contract_version": "1.0",
+          "error": {
+            "code": "REPAIR_FAILED",
+            "message": "생성 결과가 검증을 통과하지 못했고 1회 보정 후에도 실패했습니다.",
+            "retryable": true,
+            "details": [
+              "reel_types[1].reason violates creator constraint: voice not allowed"
+            ]
+          }
+        }
+      },
+      "non_retryable": {
+        "INVALID_REQUEST": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-invalid-request",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INVALID_REQUEST",
+            "message": "payload가 계약(SurveyDiagnosisRequestV1/PrescriptionRequestV1)과 일치하지 않습니다.",
+            "retryable": false,
+            "details": [
+              {
+                "loc": [
+                  "answers",
+                  "q19_anything"
+                ],
+                "msg": "Extra inputs are not permitted",
+                "type": "extra_forbidden"
+              }
+            ]
+          }
+        },
+        "INSUFFICIENT_INPUT": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-insufficient-input",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INSUFFICIENT_INPUT",
+            "message": "문진 답변이 하나도 없고 제품 이미지도 없습니다. 답변 또는 이미지 중 하나는 필요합니다.",
+            "retryable": false,
+            "details": [
+              {
+                "reason": "no_answers_and_no_image"
+              }
+            ]
+          }
+        },
+        "INVALID_IMAGE_TYPE": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-invalid-image-type",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INVALID_IMAGE_TYPE",
+            "message": "지원하지 않는 이미지 형식입니다. image/jpeg, image/png, image/webp만 허용됩니다.",
+            "retryable": false,
+            "details": [
+              {
+                "content_type": "image/gif",
+                "accepted": [
+                  "image/jpeg",
+                  "image/png",
+                  "image/webp"
+                ]
+              }
+            ]
+          }
+        },
+        "IMAGE_TOO_LARGE": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-image-too-large",
+          "contract_version": "1.0",
+          "error": {
+            "code": "IMAGE_TOO_LARGE",
+            "message": "product_image 이미지가 허용 용량을 초과했습니다.",
+            "retryable": false,
+            "details": [
+              {
+                "limit_bytes": 1250000,
+                "field": "product_image"
+              }
+            ]
+          }
+        },
+        "INTERNAL_ERROR": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-internal-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+            "retryable": false,
+            "details": []
+          }
+        }
+      }
+    }
+  },
+  "prescription": {
+    "endpoint": "POST /api/v1/prescription",
+    "request": {
+      "contract_version": "1.0",
+      "locale": "ko-KR",
+      "instagram_url": "https://www.instagram.com/reel/C0ffeeBeanz/"
+    },
+    "success": {
+      "ok": true,
+      "request_id": "fixture-prescription-001",
+      "contract_version": "1.0",
+      "data": {
+        "schema_version": "prescription.v1",
+        "prescription": {
+          "summary": "도달은 충분하지만 시청 유지가 초반에 끊기는 릴스입니다. 첫 3초 훅을 재설계하세요.",
+          "diagnosis": "스크린샷 1에서 도달 계정 수 대비 팔로우 전환이 낮게 표시되고, 스크린샷 2의 시청 유지 그래프는 3초 부근에서 가파르게 하락합니다. 스크린샷 3의 저장 수는 읽을 수 없어 판단에서 제외했습니다."
+        },
+        "next_actions": [
+          {
+            "order": 1,
+            "title": "첫 3초를 결과 장면으로 시작",
+            "description": "완성품의 빛 반사 컷을 맨 앞으로 옮기고 제작 과정은 그 다음에 배치합니다."
+          },
+          {
+            "order": 2,
+            "title": "자막 크기와 위치 조정",
+            "description": "핵심 메시지 자막을 화면 중앙 상단에 크게 배치해 무음 시청에서도 읽히게 합니다."
+          },
+          {
+            "order": 3,
+            "title": "길이를 20초 이내로 단축",
+            "description": "유지율 하락 구간 이후 컷을 제거하고 CTA를 앞당깁니다."
+          },
+          {
+            "order": 4,
+            "title": "저장 유도 문구 추가",
+            "description": "마지막 2초에 '색 조합 저장해두기' 자막을 넣어 저장 지표를 확인 가능하게 만듭니다."
+          }
+        ],
+        "tone": {
+          "keywords": [
+            "명확한",
+            "빠른 훅",
+            "따뜻한 색감"
+          ],
+          "description": "무드는 유지하되 초반 정보 밀도를 높입니다. 첫 컷은 설명 없이 결과부터 보여줍니다."
+        }
+      }
+    },
+    "errors": {
+      "retryable": {
+        "MODEL_TIMEOUT": {
+          "ok": false,
+          "request_id": "fixture-prescription-model-timeout",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_TIMEOUT",
+            "message": "모델 응답이 제한 시간 내에 도착하지 않았습니다.",
+            "retryable": true,
+            "details": []
+          }
+        },
+        "MODEL_PROVIDER_ERROR": {
+          "ok": false,
+          "request_id": "fixture-prescription-model-provider-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_PROVIDER_ERROR",
+            "message": "모델 제공자 호출에 실패했습니다.",
+            "retryable": true,
+            "details": []
+          }
+        },
+        "MODEL_SCHEMA_ERROR": {
+          "ok": false,
+          "request_id": "fixture-prescription-model-schema-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_SCHEMA_ERROR",
+            "message": "모델 출력이 예상 스키마와 일치하지 않습니다.",
+            "retryable": true,
+            "details": [
+              {
+                "loc": [
+                  "priorities"
+                ],
+                "msg": "List should have at least 3 items"
+              }
+            ]
+          }
+        },
+        "MODEL_CONTENT_ERROR": {
+          "ok": false,
+          "request_id": "fixture-prescription-model-content-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "MODEL_CONTENT_ERROR",
+            "message": "모델이 사용 가능한 내용을 생성하지 못했습니다.",
+            "retryable": true,
+            "details": [
+              {
+                "finish_reason": "SAFETY"
+              }
+            ]
+          }
+        },
+        "REPAIR_FAILED": {
+          "ok": false,
+          "request_id": "fixture-prescription-repair-failed",
+          "contract_version": "1.0",
+          "error": {
+            "code": "REPAIR_FAILED",
+            "message": "생성 결과가 검증을 통과하지 못했고 1회 보정 후에도 실패했습니다.",
+            "retryable": true,
+            "details": [
+              "reel_types[1].reason violates creator constraint: voice not allowed"
+            ]
+          }
+        }
+      },
+      "non_retryable": {
+        "INVALID_REQUEST": {
+          "ok": false,
+          "request_id": "fixture-prescription-invalid-request",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INVALID_REQUEST",
+            "message": "payload가 계약(SurveyDiagnosisRequestV1/PrescriptionRequestV1)과 일치하지 않습니다.",
+            "retryable": false,
+            "details": [
+              {
+                "loc": [
+                  "answers",
+                  "q19_anything"
+                ],
+                "msg": "Extra inputs are not permitted",
+                "type": "extra_forbidden"
+              }
+            ]
+          }
+        },
+        "INVALID_IMAGE_TYPE": {
+          "ok": false,
+          "request_id": "fixture-prescription-invalid-image-type",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INVALID_IMAGE_TYPE",
+            "message": "지원하지 않는 이미지 형식입니다. image/jpeg, image/png, image/webp만 허용됩니다.",
+            "retryable": false,
+            "details": [
+              {
+                "content_type": "image/gif",
+                "accepted": [
+                  "image/jpeg",
+                  "image/png",
+                  "image/webp"
+                ]
+              }
+            ]
+          }
+        },
+        "IMAGE_TOO_LARGE": {
+          "ok": false,
+          "request_id": "fixture-prescription-image-too-large",
+          "contract_version": "1.0",
+          "error": {
+            "code": "IMAGE_TOO_LARGE",
+            "message": "product_image 이미지가 허용 용량을 초과했습니다.",
+            "retryable": false,
+            "details": [
+              {
+                "limit_bytes": 1250000,
+                "field": "product_image"
+              }
+            ]
+          }
+        },
+        "INVALID_IMAGE_COUNT": {
+          "ok": false,
+          "request_id": "fixture-prescription-invalid-image-count",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INVALID_IMAGE_COUNT",
+            "message": "Insight 스크린샷은 정확히 3장이어야 합니다.",
+            "retryable": false,
+            "details": [
+              {
+                "expected": 3,
+                "actual": 2
+              }
+            ]
+          }
+        },
+        "INVALID_INSTAGRAM_URL": {
+          "ok": false,
+          "request_id": "fixture-prescription-invalid-instagram-url",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INVALID_INSTAGRAM_URL",
+            "message": "Instagram Reel URL 형식이 아닙니다.",
+            "retryable": false,
+            "details": [
+              {
+                "loc": [
+                  "payload",
+                  "instagram_url"
+                ]
+              }
+            ]
+          }
+        },
+        "INTERNAL_ERROR": {
+          "ok": false,
+          "request_id": "fixture-prescription-internal-error",
+          "contract_version": "1.0",
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+            "retryable": false,
+            "details": []
+          }
+        }
+      }
+    }
+  },
+  "ui_option_catalog": {
+    "contract_version": "1.0",
+    "questions": {
+      "q6": {
+        "field": "q6_product_appeals",
+        "selection": "multiple",
+        "max_selection": 3,
+        "options": [
+          {
+            "label": "디자인",
+            "code": "design"
+          },
+          {
+            "label": "색감",
+            "code": "color"
+          },
+          {
+            "label": "디테일",
+            "code": "detail"
+          },
+          {
+            "label": "질감",
+            "code": "texture"
+          },
+          {
+            "label": "소재",
+            "code": "material"
+          },
+          {
+            "label": "제작 과정",
+            "code": "process"
+          },
+          {
+            "label": "스토리",
+            "code": "story"
+          },
+          {
+            "label": "희소성",
+            "code": "rarity"
+          },
+          {
+            "label": "기타",
+            "code": "other"
+          }
+        ]
+      },
+      "q9": {
+        "field": "q9_purchase_motives",
+        "selection": "multiple",
+        "max_selection": 3,
+        "options": [
+          {
+            "label": "예뻐서",
+            "code": "aesthetic"
+          },
+          {
+            "label": "특별해서",
+            "code": "specialness"
+          },
+          {
+            "label": "나를 위해",
+            "code": "self_reward"
+          },
+          {
+            "label": "선물하려고",
+            "code": "gift"
+          },
+          {
+            "label": "추억을 간직하려고",
+            "code": "memories"
+          },
+          {
+            "label": "공간을 꾸미려고",
+            "code": "space_decor"
+          },
+          {
+            "label": "나만의 것을 갖고 싶어서",
+            "code": "self_expression"
+          }
+        ]
+      },
+      "q10": {
+        "field": "q10_desired_emotions",
+        "selection": "multiple",
+        "max_selection": 3,
+        "options": [
+          {
+            "label": "설렘",
+            "code": "excitement"
+          },
+          {
+            "label": "행복",
+            "code": "happiness"
+          },
+          {
+            "label": "따뜻함",
+            "code": "warmth"
+          },
+          {
+            "label": "힐링",
+            "code": "healing"
+          },
+          {
+            "label": "재미",
+            "code": "fun"
+          },
+          {
+            "label": "특별함",
+            "code": "specialness"
+          },
+          {
+            "label": "감동",
+            "code": "moved"
+          },
+          {
+            "label": "위로",
+            "code": "comfort"
+          },
+          {
+            "label": "기타",
+            "code": "other"
+          }
+        ]
+      },
+      "q11": {
+        "field": "q11_brand_attributes",
+        "selection": "multiple",
+        "max_selection": 3,
+        "options": [
+          {
+            "label": "설렘",
+            "code": "excitement"
+          },
+          {
+            "label": "행복",
+            "code": "happiness"
+          },
+          {
+            "label": "따뜻함",
+            "code": "warmth"
+          },
+          {
+            "label": "힐링",
+            "code": "healing"
+          },
+          {
+            "label": "재미",
+            "code": "fun"
+          },
+          {
+            "label": "특별함",
+            "code": "specialness"
+          },
+          {
+            "label": "감동",
+            "code": "moved"
+          },
+          {
+            "label": "위로",
+            "code": "comfort"
+          },
+          {
+            "label": "기타",
+            "code": "other"
+          }
+        ]
+      },
+      "q16": {
+        "field": "q16_pain_points",
+        "selection": "multiple",
+        "max_selection": 3,
+        "options": [
+          {
+            "label": "조회수가 안 나와요",
+            "code": "low_reach"
+          },
+          {
+            "label": "팔로워가 안 늘어요",
+            "code": "low_follower_growth"
+          },
+          {
+            "label": "어떤 콘텐츠를 만들지 모르겠어요",
+            "code": "ideation"
+          },
+          {
+            "label": "촬영이 어려워요",
+            "code": "shooting_difficulty"
+          },
+          {
+            "label": "편집이 어려워요",
+            "code": "editing_difficulty"
+          },
+          {
+            "label": "꾸준히 올리기 어려워요",
+            "code": "consistency_difficulty"
+          },
+          {
+            "label": "구매로 연결되지 않아요",
+            "code": "low_conversion"
+          },
+          {
+            "label": "기타",
+            "code": "other"
+          }
+        ]
+      },
+      "q17": {
+        "field": "q17_current_formats",
+        "selection": "multiple",
+        "max_selection": 3,
+        "options": [
+          {
+            "label": "거의 안 올려요",
+            "code": "rarely_post"
+          },
+          {
+            "label": "완성품 위주",
+            "code": "finished_product"
+          },
+          {
+            "label": "제작 과정 위주",
+            "code": "process"
+          },
+          {
+            "label": "사진/영상 혼합",
+            "code": "photo_video_mix"
+          },
+          {
+            "label": "트렌드 릴스",
+            "code": "trend_reels"
+          },
+          {
+            "label": "브이로그",
+            "code": "vlog"
+          }
+        ]
+      },
+      "q18": {
+        "field": "q18_disclosure",
+        "selection": "single",
+        "max_selection": null,
+        "options": [
+          {
+            "label": "네",
+            "code": "yes"
+          },
+          {
+            "label": "아니요",
+            "code": "no"
+          },
+          {
+            "label": "얼굴만",
+            "code": "face_only"
+          },
+          {
+            "label": "목소리만",
+            "code": "voice_only"
+          }
+        ]
+      }
+    },
+    "ssot_code_aliases": {
+      "q6": {
+        "making_process": "process"
+      },
+      "q9": {
+        "special": "specialness",
+        "memory": "memories",
+        "space_styling": "space_decor",
+        "unique_ownership": "self_expression"
+      },
+      "q10": {
+        "being_moved": "moved"
+      },
+      "q11": {
+        "being_moved": "moved"
+      },
+      "q16": {
+        "low_views": "low_reach",
+        "slow_follower_growth": "low_follower_growth",
+        "content_ideation": "ideation",
+        "filming": "shooting_difficulty",
+        "editing": "editing_difficulty",
+        "posting_consistency": "consistency_difficulty",
+        "low_purchase_conversion": "low_conversion"
+      },
+      "q17": {
+        "rarely_posts": "rarely_post",
+        "making_process": "process"
+      },
+      "q18": {
+        "face_and_voice": "yes",
+        "neither": "no"
+      }
+    }
+  }
+}

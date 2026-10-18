@@ -1,13 +1,14 @@
 // Regression suite (HANDOFF §8-5): drives every workflow state against the production build with the system Chrome.
 //   npm run e2e            → builds, serves on :5199, runs, exits 1 on any failed check
 //   BASE_URL=... npm run e2e → reuse a running server
-// Screenshots land in scripts/shots/ (gitignored). Mock API only — no Gemini / Python service is called.
+// Screenshots land in scripts/shots/ (gitignored). Built with VITE_API_MODE=mock — no Gemini / Python service is called.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { startServer, launchBrowser, createSuite, assert, assertEq } from './lib/harness.mjs';
 
 mkdirSync('scripts/shots', { recursive: true });
-const server = await startServer('preview');
+// Legacy suite runs the explicit mock transport (the default build mode is http).
+const server = await startServer('preview', { port: 5199, env: { VITE_API_MODE: 'mock' } });
 const base = server.base;
 const browser = await launchBrowser();
 const page = await browser.newPage();
@@ -106,6 +107,10 @@ await byText('다음'); await waitPath('/upload'); await shot('04_upload', false
 await check('upload: dropzone is single keyboard tab stop, hidden input labelled', async () => {
   const r = await page.evaluate(() => ({ dz: document.querySelector('.dropzone')?.getAttribute('role'), tab: document.querySelector('input[type=file]')?.tabIndex, label: document.querySelector('input[type=file]')?.getAttribute('aria-label') }));
   assertEq(r, { dz: 'button', tab: -1, label: '파일 선택' }, 'uploader');
+});
+await check('upload: contract accept (jpeg/png/webp, no pdf), single product image', async () => {
+  const r = await page.evaluate(() => { const i = document.querySelector('input[type=file]'); return { accept: i?.getAttribute('accept'), multiple: i?.multiple }; });
+  assertEq(r, { accept: 'image/jpeg,image/png,image/webp', multiple: false }, 'product upload input');
 });
 
 /* ================= PRESCRIPTION input + lightbox, survey draft survives ================= */
@@ -240,6 +245,25 @@ await check('prescription input @320: renders without horizontal overflow', asyn
   await page.setViewport({ width: 320, height: 900, deviceScaleFactor: 1 });
   await page.goto(`${base}/prescription`, { waitUntil: 'networkidle0' });
   assertEq(await noHorizontalOverflow(), { doc: true, cards: true }, 'overflow'); await shot('R_320_prescription');
+});
+
+/* ================= CONTRACT alignment ================= */
+console.log('\n[CONTRACT]');
+await check('legacy sessionStorage codes migrate to contract codes on load (Q9 capped at 3)', async () => {
+  await page.goto(`${base}/survey/step/1`, { waitUntil: 'networkidle0' });
+  await page.evaluate(() => sessionStorage.setItem('sosu.survey.v2', JSON.stringify({ status: 'STEP_2', answers: { q01: 'x', q06: ['scarcity'], q09: ['special', 'memory', 'decor', 'unique_ownership'], q10: ['touching'], q16: ['low_views', 'bogus'], q17: ['making_process'], q18: ['face_only'] }, files: [], result: null, email: '', errorKind: null })));
+  await page.goto(`${base}/survey/step/2`, { waitUntil: 'networkidle0' }); await waitPath('/step/2');
+  const a = (await storage('sosu.survey.v2')).answers;
+  assertEq({ q06: a.q06, q09: a.q09, q10: a.q10, q16: a.q16, q17: a.q17, q18: a.q18 }, { q06: ['rarity'], q09: ['specialness', 'memories', 'space_decor'], q10: ['moved'], q16: ['low_reach'], q17: ['process'], q18: ['face_only'] }, 'migrated');
+  assertEq(await chipAttr('특별해서', 'aria-pressed'), 'true', 'migrated chip pressed');
+  assertEq(await chipAttr('예뻐서', 'disabled'), 'true', 'Q9 max 3 reached');
+});
+await check('prescription: /p/ post URL is rejected (contract: /reel/ or /reels/ only)', async () => {
+  await page.goto(`${base}/prescription`, { waitUntil: 'networkidle0' }); await waitPath('=/prescription');
+  await page.click('input[type=url]', { clickCount: 3 }); await page.type('input[type=url]', 'https://www.instagram.com/p/ABC123/');
+  assert(!(await page.$('.field__mark')), 'valid mark shown for /p/');
+  await page.click('input[type=url]', { clickCount: 3 }); await page.type('input[type=url]', 'https://instagram.com/reels/ABC_12-3');
+  assert(await page.$('.field__mark'), 'no valid mark for /reels/');
 });
 
 await browser.close();

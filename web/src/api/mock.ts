@@ -6,7 +6,7 @@
 import type { Answers } from '../data/questions';
 import type { PrescriptionReport, SurveyReport } from '../data/report';
 import { ApiError } from './errors';
-import type { RequestOptions } from './client';
+import type { DiagnosisOptions, PrescriptionOptions } from './client';
 
 const wait = (ms: number, signal?: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
@@ -48,7 +48,9 @@ const LONG_PRESCRIPTION: PrescriptionReport = {
   tone: `차분하고 따뜻한 밤의 톤을 유지하되, 첫 자막만 선언형으로. ${LONG_PARAGRAPH}`,
 };
 
-export async function generateDiagnosis(answers: Answers, opts: RequestOptions = {}): Promise<SurveyReport> {
+export const emailDelivery = true;
+
+export async function generateDiagnosis(answers: Answers, opts: DiagnosisOptions = {}): Promise<SurveyReport> {
   await wait(2800, opts.signal);
   const fail = knob('fail');
   if (fail === 'timeout' || fail === 'error') throw new ApiError(fail);
@@ -75,7 +77,7 @@ export async function generateDiagnosis(answers: Answers, opts: RequestOptions =
   };
 }
 
-export async function generatePrescription(_url: string, opts: RequestOptions = {}): Promise<PrescriptionReport> {
+export async function generatePrescription(_url: string, opts: PrescriptionOptions = { insightImages: [] }): Promise<PrescriptionReport> {
   await wait(2600, opts.signal);
   const fail = knob('fail');
   if (fail === 'timeout' || fail === 'error') throw new ApiError(fail);

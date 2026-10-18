@@ -5,7 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import puppeteer from 'puppeteer-core';
 
 const CHROME = process.env.CHROME ?? '/usr/bin/google-chrome';
-const PORT = Number(process.env.PORT ?? 5199);
+// Port: PORT env wins, else the suite's default (e2e 5199, media 5198, adapter 5196).
 
 async function waitFor(url, ms = 20000) {
   const end = Date.now() + ms;
@@ -18,15 +18,18 @@ async function waitFor(url, ms = 20000) {
 
 async function portBusy(base) { try { await fetch(base); return true; } catch { return false; } }
 
-export async function startServer(mode) {
+// opts.env: extra env for the build/serve child (e.g. VITE_API_MODE=mock for the legacy e2e).
+export async function startServer(mode, { port = 5199, env = {} } = {}) {
   if (process.env.BASE_URL) return { base: process.env.BASE_URL, stop() {} };
+  const PORT = Number(process.env.PORT ?? port);
+  const childEnv = { ...process.env, ...env };
   const base = `http://localhost:${PORT}`;
   if (await portBusy(base)) throw new Error(`port ${PORT} is already in use — stop it, or set BASE_URL=${base} to reuse that server`);
   if (mode === 'preview') {
-    await new Promise((res, rej) => spawn('npx', ['vite', 'build'], { stdio: ['ignore', 'ignore', 'inherit'] }).on('exit', (c) => (c === 0 ? res() : rej(new Error('vite build failed')))));
+    await new Promise((res, rej) => spawn('npx', ['vite', 'build'], { stdio: ['ignore', 'ignore', 'inherit'], env: childEnv }).on('exit', (c) => (c === 0 ? res() : rej(new Error('vite build failed')))));
   }
   const args = mode === 'preview' ? ['vite', 'preview', '--port', String(PORT), '--strictPort'] : ['vite', '--port', String(PORT), '--strictPort'];
-  const proc = spawn('npx', args, { stdio: ['ignore', 'ignore', 'inherit'], detached: true });
+  const proc = spawn('npx', args, { stdio: ['ignore', 'ignore', 'inherit'], detached: true, env: childEnv });
   const stop = () => { try { process.kill(-proc.pid, 'SIGTERM'); } catch { /* already gone */ } };
   process.on('exit', stop);
   for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { stop(); process.exit(1); });

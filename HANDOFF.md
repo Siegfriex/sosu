@@ -1,5 +1,7 @@
 # SOSU — HANDOFF (2026-09-13)
 
+> **2026-10-18 Stage 1 갱신 — 이 문서의 2026-09-13 서술 중 다음은 더 이상 사실이 아님:** `web/` untracked·FROZEN(mock 전용), `SOSU_py` 미커밋 작업, 백엔드 연동 미착수, 계약 코드 불일치(§4.1), 업로드에 PDF 허용. 현재 상태: 프론트는 기본 `VITE_API_MODE=http`로 FastAPI에 실제 multipart 연동(mock은 명시 시에만), 계약 코드 정렬, 가이드북 지식 계층(gb2-5edea367) 합성 프롬프트 연결, 결정론 fake 서버(`SOSU_py/scripts/serve_fake.py`). 최신 진입점: `SOSU_STAGE1_INTEGRATION_REPORT.md` · `SOSU_STAGE1_TEST_MATRIX.md` · `SOSU_GUIDEBOOK_KNOWLEDGE_REPORT.md` · `SOSU_PHASE2_GEMINI_ACTIVATION.md`. 검증 명령 추가: `npm run test:adapter`, `npm run e2e:integration`(fake API :8000 + preview :5197). **Vercel:** push 전 프로젝트 env에 `VITE_API_MODE=mock` 설정 필요(기본이 http로 바뀜).
+
 > 대상: 이 레포를 이어받는 로컬 에이전트. 이 문서 하나로 "무엇이 어디까지 됐고, 무엇을 건드리면 안 되고, 다음에 무엇을 해야 하는지"가 파악되어야 한다.
 > Design SSOT는 Figma `ejRfXQERdNsBWbKYEdemRB`의 `00_Foundations` ~ `06_Handoff` 페이지. 코드 SSOT는 `web/`.
 

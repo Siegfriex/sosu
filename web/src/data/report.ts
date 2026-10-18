@@ -8,10 +8,10 @@ export interface SurveyReport {
   strengths: string;
   target: string;
   tone: string;
-  fonts: { title: string; subtitle: string };
+  fonts: { title: string; subtitle: string; reason?: string }; // reason: contract fonts.reason
   priorities: [string, string, string];
   reelTypes: [string, string, string];
-  guidebookNote: string;
+  guidebookNote?: string; // mock only — the contract has no such field; hidden when absent
   structure: { range: string; guide: string }[];
   finalGuidance: string; // OPEN L5: section title duplicated in source
 }
