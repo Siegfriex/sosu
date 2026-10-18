@@ -72,10 +72,16 @@
 
 ### 프론트 `https://sosu-rosy.vercel.app`
 
-- 1차 Git 배포 `dpl_GGaPbZhU3A7eajf7rrXUuX6wvTSj` (커밋 `1257ae6`)는 **ERROR**였다. 로그: `sh: line 1: vite: command not found`, `Command "vite build" exited with 127`.
-  - 원인: 프로젝트 `rootDirectory`가 null(레포 루트)이었다. `d1f03cf`의 Git 배포도 같은 원인으로 실패했던 것으로 보인다.
-- 조치: `rootDirectory=web`으로 PATCH했다(Vercel API, 14:22 KST).
-- CLI로 운영에 직접 재배포하려 했으나 권한 분류기가 거부했다. 대신 다음 main push로 재배포한다. 결과는 `SOSU_VERCEL_RELEASE_AUDIT.md`에 기록한다.
+- 1차 Git 배포 `dpl_GGaPbZhU3A7eajf7rrXUuX6wvTSj` (`1257ae6`): **ERROR**. 로그는 `sh: line 1: vite: command not found`, `Command "vite build" exited with 127`이었다. 프로젝트 `rootDirectory`가 null(레포 루트)이라 의존성이 설치되지 않은 것이 원인이다.
+- 14:22에 Vercel API로 `rootDirectory=web`을 설정했다. CLI로 운영에 직접 재배포하는 것은 권한 분류기가 거부했으므로, main push로 재배포했다.
+- 2차 Git 배포 `dpl_8tdjttQPVmbLgaTSzFLyXSJjGFib` (`328b195`): **READY** (14:23:52). `<meta name="sosu-build" content="328b1950…">`로 SHA를 확인했다.
+- `BASE_URL=https://sosu-rosy.vercel.app API=https://sosu-py.vercel.app npm run smoke:prod`: **10/10, rc=0** (6s). 확인한 항목은 다음과 같다.
+  - health, features, CORS 2건
+  - 빈 진단 → 503, 처방 2장 → 503
+  - 두 라우트 @360 정상, 콘솔 에러 없음
+  - build meta 존재
+  - 번들이 sosu-py를 참조하고 mock 흔적이 없음
+- 운영 UI 브라우저 확인(puppeteer, 오케스트레이터): 문진 → 진단 제출 → API 503 `SERVICE_UNAVAILABLE` → `/survey/error`에 "지금은 AI 진단 서비스를 준비 중이에요"가 표시됐다. 재시도 버튼 0개, 가짜 보고서 없음. 스크린샷: `web/scripts/shots/prod-smoke/prod_ui_service_unavailable.png`.
 
 ## 5. 실행하지 않은 것 (NOT RUN)
 
