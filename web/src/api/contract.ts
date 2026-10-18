@@ -64,7 +64,7 @@ export interface SuccessEnvelope<T> { ok: true; request_id: string; contract_ver
 
 /** GET /api/v1/features (not enveloped). */
 export interface FeatureFlag { enabled: boolean; reason?: string | null }
-export interface FeaturesV1 { contract_version?: string; inference?: FeatureFlag; email?: FeatureFlag; image_storage?: FeatureFlag; research?: FeatureFlag; knowledge_version?: string; build?: string }
+export interface FeaturesV1 { contract_version?: string; inference?: FeatureFlag; email?: FeatureFlag; image_storage?: FeatureFlag; research?: FeatureFlag; guidebook?: FeatureFlag; knowledge_version?: string; build?: string }
 export interface ReportEmailRequestV1 { kind: 'diagnosis' | 'prescription'; report: unknown; request_id: string; delivery_token: string; email: string }
 export interface ErrorEnvelope { ok: false; request_id: string; contract_version: string; error: { code: ErrorCode; message: string; retryable: boolean; details: unknown[] } }
 

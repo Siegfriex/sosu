@@ -155,6 +155,7 @@ await check('INT-D1 diagnosis with product image → real HTTP → rendered resu
   const must = [d.positioning?.summary, ...(d.strengths ?? []).map((s) => s.title), ...(d.final_guidance ?? []).slice(0, 1)].filter(Boolean);
   const missing = must.filter((m) => !t.includes(norm(m)));
   assertEq(missing, [], 'structured fields not rendered');
+  assertEq(['유형 1', '유형 2', '유형 3'].map((l) => t.includes(l)).concat(t.includes('유형 ○')), [true, true, true, false], 'reel type labels numbered');
   evidence.push({ id: 'INT-D1', request_id: r.body.request_id, fake: r.fake });
   return `request_id=${r.body.request_id} rendered ${must.length} key fields`;
 });
@@ -183,6 +184,19 @@ await check('INT-D5 email delivery in http mode is not faked (no /delivered with
   await shot('D5_delivery', false);
   const p = await path(); assert(!String(p).endsWith('/delivered'), `reached ${p}`);
   return `stayed at ${p}; alerts: ${await alertText()}`;
+});
+
+await freshPage();
+await check('INT-D15 three product images (multi-select) → 3 repeated product_image parts, each ≤ 1.25 MB', async () => {
+  await fillSurvey({ withChoices: false });
+  const input = await page.$('input[type=file]');
+  assert(await input.evaluate((el) => el.multiple), 'product input is not multi-select');
+  await input.uploadFile(BIG, resolve(IMG, 'small.jpg'), INSIGHTS[0]); await sleep(300);
+  await byText('진단'); await waitPath('/result', 60000);
+  const last = await fake.last(); const f = (last.files ?? []).filter((x) => x.field === 'product_image');
+  assert(f.length === 3 && f.every((x) => x.size_bytes <= 1250000), `files ${JSON.stringify(last.files)}`);
+  assert(lastDiagResponse()?.body?.ok, 'not ok');
+  return f.map((x) => x.size_bytes).join('/');
 });
 
 await freshPage();

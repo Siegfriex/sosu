@@ -30,10 +30,10 @@ VITE_API_MODE=mock npm run dev   # offline UI with the in-browser mock
 | Command | What it runs | Count |
 |---|---|---|
 | `npm run typecheck` / `lint` / `tokens:check` | tsc, oxlint, Figma token drift | — |
-| `npm run e2e` | UI flows on a mock build (:5199) | 47 |
+| `npm run e2e` | UI flows on a mock build (:5199) | 48 |
 | `npm run test:media` | image compression budgets | 6 |
 | `npm run test:adapter` | contract → view-model adapters, error mapping (incl. edge 429) | 12 |
-| `npm run e2e:integration` | real Chrome → production build → real HTTP → FastAPI with a deterministic fake Gemini gateway (:8000/:5197) | 24 |
+| `npm run e2e:integration` | real Chrome → production build → real HTTP → FastAPI with a deterministic fake Gemini gateway (:8000/:5197) | 25 |
 | `npm run smoke:prod` | non-billed production checks (health, CORS, bundle) | 10 |
 | `npm run e2e:prod` | **Playwright, production**: free checks | 14 |
 | `SOSU_E2E_PAID=1 npm run e2e:prod` | + 1 live diagnosis and 1 live prescription (billed) | +3 |

@@ -10,7 +10,7 @@ import { IMAGE_ACCEPT } from '../api/contract';
 import { MediaPrepareError } from '../media/compressImage';
 import { prepareInsightImages } from '../media/prepareInsightImage';
 import { isValidEmail, isValidInstagramUrl } from '../api/validation';
-import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, prescriptionRoute, useEmailAvailability, useWorkflows, type PrescriptionStatus } from '../state/workflows';
+import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, prescriptionRoute, useEmailAvailability, useGuidebookIncluded, useWorkflows, type PrescriptionStatus } from '../state/workflows';
 import { ContentCard, Screen, SectionHeader } from '../components/shell';
 import { Button, InlineMessage, URLField } from '../components/controls';
 import { DeliverySuccess, EmailDeliveryForm, ErrorState, ExampleThumbnail, FileUploader, Lightbox, LoadingState, ReportSection, type DeliveryFormState } from '../components/blocks';
@@ -140,6 +140,7 @@ export function PrescriptionDelivery() {
   useSyncStatus('DELIVERY');
   const [state, setState] = useState<DeliveryFormState>('empty');
   const [availability, setAvailability] = useEmailAvailability(prescription.delivery);
+  const guidebook = useGuidebookIncluded(availability === 'available');
   const submit = async () => {
     if (!isValidEmail(prescription.email)) return setState('invalid-email');
     setState('submitting');
@@ -149,7 +150,7 @@ export function PrescriptionDelivery() {
   return (
     <Screen theme="dark" workflow="prescription" status="delivery">
       <EmailDeliveryForm docName="처방전" email={prescription.email} onEmail={(email) => { patchPrescription({ email }); if (state !== 'submitting') setState('empty'); }}
-        state={state} onSubmit={submit} unavailable={availability === 'unavailable'} checking={availability === 'checking'} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} />
+        state={state} onSubmit={submit} unavailable={availability === 'unavailable'} checking={availability === 'checking'} guidebook={guidebook} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} />
     </Screen>
   );
 }

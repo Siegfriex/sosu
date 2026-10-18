@@ -173,8 +173,8 @@ export function ReportBrandTable({ brand }: { brand: { name: string; material: s
 
 /* ---------- EmailDeliveryForm (31:551) + DeliverySuccess (31:474) ---------- */
 export type DeliveryFormState = 'empty' | 'invalid-email' | 'submitting' | 'send-error';
-export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, onReset, unavailable = false, checking = false }:
-  { docName: '진단서' | '처방전'; email: string; onEmail: (v: string) => void; state: DeliveryFormState; onSubmit: () => void; onReset: () => void; unavailable?: boolean; checking?: boolean }) {
+export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, onReset, unavailable = false, checking = false, guidebook = false }:
+  { docName: '진단서' | '처방전'; email: string; onEmail: (v: string) => void; state: DeliveryFormState; onSubmit: () => void; onReset: () => void; unavailable?: boolean; checking?: boolean; guidebook?: boolean }) {
   // unavailable: email backend disabled / unknown / no delivery token (http mode) — never fake a success.
   // checking: GET /features in flight — submit stays disabled until the backend says email is enabled.
   const valid = isValidEmail(email) && !unavailable && !checking;
@@ -187,6 +187,7 @@ export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, on
         <EmailField value={email} onChange={onEmail} disabled={submitting} ariaLabel="이메일 주소"
           error={state === 'invalid-email' ? '이메일 형식을 확인해 주세요' : null} />
         {state === 'send-error' && <InlineMessage tone="error">메일 전송에 실패했어요. 다시 시도해 주세요.</InlineMessage>}
+        {guidebook && !unavailable && <span className="inline-msg t-helper" data-delivery-guidebook>{`${docName === '진단서' ? '진단서와' : '처방전과'} 함께 SOSU 릴스 가이드북(전자책 PDF) 다운로드 링크도 보내드려요.`}</span>}
         {unavailable && <span className="inline-msg t-helper" role="status" data-delivery-unavailable>이메일 발송 기능은 준비 중입니다. 지금은 결과 화면에서 내용을 확인해 주세요.</span>}
         <div className="delivery__actions">
           <Button type="submit" size="md" state={submitting ? 'loading' : valid ? 'idle' : 'disabled'}>{state === 'send-error' ? '다시 보내기' : `메일로 ${docName} 받기`}</Button>

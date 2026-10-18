@@ -7,10 +7,10 @@ import { API_MODE, api } from '../api/client';
 import { ApiError, generationErrorKind, inputErrorMessage, isAbortError, isInputError } from '../api/errors';
 import { IMAGE_ACCEPT } from '../api/contract';
 import { MediaPrepareError } from '../media/compressImage';
-import { prepareProductImage } from '../media/prepareProductImage';
+import { PRODUCT_IMAGE_MAX_COUNT, prepareProductImage } from '../media/prepareProductImage';
 import { isValidEmail } from '../api/validation';
 import { SECTIONS, STEP_SECTIONS, type AnswerValue } from '../data/questions';
-import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, surveyRoute, useEmailAvailability, useWorkflows, type SurveyStatus } from '../state/workflows';
+import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, surveyRoute, useEmailAvailability, useGuidebookIncluded, useWorkflows, type SurveyStatus } from '../state/workflows';
 import { ContentCard, Divider, Screen, SectionHeader } from '../components/shell';
 import { Button, InlineMessage, QuestionBlock } from '../components/controls';
 import { DeliverySuccess, EmailDeliveryForm, ErrorState, FileUploader, LoadingState, ReportBrandTable, ReportSection, type DeliveryFormState } from '../components/blocks';
@@ -69,11 +69,11 @@ export function SurveyUpload() {
       <ContentCard title={TITLE}>
         <SectionHeader title="제품 이미지 업로드" />
         <p className="t-body">{'마지막으로 업로드 할 제품 이미지가 있으면 업로드 해주세요.\n*없으면 바로 아래 진단 버튼을 눌러주세요'}</p>
-        <FileUploader files={survey.files} onChange={(files) => patchSurvey({ files, inputError: null })} accept={IMAGE_ACCEPT} max={1} />
+        <FileUploader files={survey.files} onChange={(files) => patchSurvey({ files, inputError: null })} accept={IMAGE_ACCEPT} max={PRODUCT_IMAGE_MAX_COUNT} />
         {survey.inputError && <div data-input-error="survey"><InlineMessage tone="error">{survey.inputError}</InlineMessage></div>}
       </ContentCard>
       <Button onClick={() => {
-        // Contract: 0..1 product image, jpeg/png/webp. An unsupported file blocks submission (the uploader already flags it).
+        // Contract: 0..3 product images, jpeg/png/webp. An unsupported file blocks submission (the uploader already flags it).
         if (survey.files.some((f) => !f.valid)) return patchSurvey({ inputError: 'jpg, png, webp 이미지만 업로드할 수 있어요. 지원하지 않는 파일을 삭제해 주세요.' });
         patchSurvey({ inputError: null });
         generationTicket.survey = true;
@@ -95,20 +95,19 @@ export function SurveyGenerating() {
     const { survey: s } = latest.current;
     const backToUpload = (inputError: string) => { generationTicket.survey = false; latest.current.patch({ inputError }); latest.current.navigate(surveyRoute.UPLOAD, { replace: true }); };
     (async () => {
-      let productImage: File | undefined;
+      const productImages: File[] = [];
       if (API_MODE === 'http') {
         if (!generationTicket.survey) return backToUpload(s.inputError ?? INTERRUPTED_MESSAGE);
         // A chosen image that no longer exists (reload) must not be silently skipped — return to upload.
-        const meta = s.files[0];
-        const file = meta ? fileStore.get(meta.id) : undefined;
-        if (s.inputError === LOST_FILES_MESSAGE || (meta && !file)) return backToUpload(LOST_FILES_MESSAGE);
-        if (file) {
-          try { productImage = await prepareProductImage(file); }
+        const files = s.files.map((meta) => fileStore.get(meta.id));
+        if (s.inputError === LOST_FILES_MESSAGE || files.some((f) => !f)) return backToUpload(LOST_FILES_MESSAGE);
+        for (const file of files as File[]) {
+          try { productImages.push(await prepareProductImage(file)); }
           catch (e) { if (e instanceof MediaPrepareError) return backToUpload(e.message); throw e; }
         }
         if (ctrl.signal.aborted) return; // StrictMode first mount / unmounted while preparing
       }
-      const { report: result, delivery } = await api.generateDiagnosis(s.answers, { signal: ctrl.signal, productImage });
+      const { report: result, delivery } = await api.generateDiagnosis(s.answers, { signal: ctrl.signal, productImages });
       if (ctrl.signal.aborted) return; // stale response
       generationTicket.survey = false;
       latest.current.patch({ result, delivery, sent: false, errorKind: null, inputError: null }); latest.current.navigate(surveyRoute.RESULT, { replace: true });
@@ -162,7 +161,7 @@ export function SurveyResult() {
         <div className="kv">{r.priorities.map((p, i) => <div key={i}><div className="kv__k">{i + 1}순위</div><div>{p}</div></div>)}</div>
       </ReportSection>
       <ReportSection title="추천 릴스 유형 조합" fieldKey="reelTypes">
-        <div className="kv">{r.reelTypes.map((t, i) => <div key={i}><div className="kv__k">유형 ○</div><div>{t}</div></div>)}{r.guidebookNote && <div className="t-strong">{r.guidebookNote}</div>}</div>
+        <div className="kv">{r.reelTypes.map((t, i) => <div key={i}><div className="kv__k">{`유형 ${i + 1}`}</div><div>{t}</div></div>)}{r.guidebookNote && <div className="t-strong">{r.guidebookNote}</div>}</div>
       </ReportSection>
       <ReportSection title="추천 릴스 구조" fieldKey="structure">
         <div className="kv">{r.structure.map((s) => <div key={s.range}><div className="kv__k">{s.range}</div><div>{s.guide}</div></div>)}</div>
@@ -180,6 +179,7 @@ export function SurveyDelivery() {
   useSyncStatus('DELIVERY');
   const [state, setState] = useState<DeliveryFormState>('empty');
   const [availability, setAvailability] = useEmailAvailability(survey.delivery);
+  const guidebook = useGuidebookIncluded(availability === 'available');
   const submit = async () => {
     if (!isValidEmail(survey.email)) return setState('invalid-email');
     setState('submitting');
@@ -189,7 +189,7 @@ export function SurveyDelivery() {
   return (
     <Screen theme="dark" workflow="survey" status="delivery">
       <EmailDeliveryForm docName="진단서" email={survey.email} onEmail={(email) => { patchSurvey({ email }); if (state !== 'submitting') setState('empty'); }}
-        state={state} onSubmit={submit} unavailable={availability === 'unavailable'} checking={availability === 'checking'} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} />
+        state={state} onSubmit={submit} unavailable={availability === 'unavailable'} checking={availability === 'checking'} guidebook={guidebook} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} />
     </Screen>
   );
 }

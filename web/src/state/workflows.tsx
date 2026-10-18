@@ -135,6 +135,19 @@ export const prescriptionRoute: Record<PrescriptionStatus, string> = {
  *  mock → always 'available'. http → 'checking' until GET /features answers; 'available' only when email.enabled and this
  *  report carries a delivery_token; anything else (disabled, unknown, fetch failure, no token) → 'unavailable'. */
 export type EmailAvailability = 'checking' | 'available' | 'unavailable';
+/** Whether the report e-mail also carries the guidebook e-book link (GET /features guidebook.enabled). Only asked once
+ *  e-mail itself is available; any failure → false, so the note never promises an attachment that is not sent. */
+export function useGuidebookIncluded(emailAvailable: boolean): boolean {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (!emailAvailable) return;
+    let live = true;
+    api.guidebookIncluded().then((v) => { if (live) setOn(v); });
+    return () => { live = false; };
+  }, [emailAvailable]);
+  return on;
+}
+
 export function useEmailAvailability(ticket: DeliveryTicket | null): [EmailAvailability, (a: EmailAvailability) => void] {
   const hasToken = !!ticket?.token;
   const [state, setState] = useState<EmailAvailability>(api.emailDelivery ? 'available' : hasToken ? 'checking' : 'unavailable');

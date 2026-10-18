@@ -108,9 +108,9 @@ await check('upload: dropzone is single keyboard tab stop, hidden input labelled
   const r = await page.evaluate(() => ({ dz: document.querySelector('.dropzone')?.getAttribute('role'), tab: document.querySelector('input[type=file]')?.tabIndex, label: document.querySelector('input[type=file]')?.getAttribute('aria-label') }));
   assertEq(r, { dz: 'button', tab: -1, label: '파일 선택' }, 'uploader');
 });
-await check('upload: contract accept (jpeg/png/webp, no pdf), single product image', async () => {
-  const r = await page.evaluate(() => { const i = document.querySelector('input[type=file]'); return { accept: i?.getAttribute('accept'), multiple: i?.multiple }; });
-  assertEq(r, { accept: 'image/jpeg,image/png,image/webp', multiple: false }, 'product upload input');
+await check('upload: contract accept (jpeg/png/webp, no pdf), up to 3 product images (multi-select)', async () => {
+  const r = await page.evaluate(() => { const i = document.querySelector('input[type=file]'); return { accept: i?.getAttribute('accept'), multiple: i?.multiple, hint: document.querySelector('.dropzone__hint')?.textContent?.includes('최대 3장') }; });
+  assertEq(r, { accept: 'image/jpeg,image/png,image/webp', multiple: true, hint: true }, 'product upload input');
 });
 
 /* ================= PRESCRIPTION input + lightbox, survey draft survives ================= */
@@ -133,6 +133,14 @@ await check('lightbox: dialog/aria-modal, focus moves to close, scroll locked', 
   assertEq(r, { role: 'dialog', modal: 'true', focus: 'lightbox__close t-body', locked: true }, 'lightbox');
 });
 await shot('09_lightbox', false);
+await check('lightbox: example image is NOT dimmed — the backdrop sits below the image and the close button', async () => {
+  const r = await page.evaluate(() => {
+    const img = document.querySelector('.lightbox__img'); const close = document.querySelector('.lightbox__close');
+    const at = (el) => { const b = el.getBoundingClientRect(); return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); };
+    return { img: at(img) === img, close: close.contains(at(close)) };
+  });
+  assertEq(r, { img: true, close: true }, 'topmost element');
+});
 await check('lightbox: Tab is trapped', async () => { await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); assertEq(await page.evaluate(() => document.activeElement?.className), 'lightbox__close t-body', 'focus'); });
 await check('lightbox: ESC closes + focus restored to trigger + scroll unlocked', async () => {
   await page.keyboard.press('Escape'); await page.waitForSelector('.lightbox', { hidden: true });

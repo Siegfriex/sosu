@@ -128,7 +128,7 @@ const ticket = (kind: DeliveryTicket['kind'], r: ParsedSuccess): DeliveryTicket 
 export async function generateDiagnosis(answers: Answers, opts: DiagnosisOptions = {}): Promise<Generated<SurveyReport>> {
   const form = new FormData();
   form.append('payload', JSON.stringify(buildDiagnosisRequest(answers)));
-  if (opts.productImage) form.append('product_image', opts.productImage, opts.productImage.name);
+  for (const f of opts.productImages ?? []) form.append('product_image', f, f.name); // repeated field, 0..3
   const r = await post('/api/v1/diagnosis', form, opts.signal);
   return { report: adaptDiagnosis(r.data), delivery: ticket('diagnosis', r) };
 }
@@ -159,6 +159,11 @@ export async function getFeatures(signal?: AbortSignal): Promise<FeaturesV1> {
 /** true only when the backend explicitly reports email.enabled === true. Unknown / failure → false. */
 export async function emailEnabled(): Promise<boolean> {
   try { return (await getFeatures()).email?.enabled === true; } catch { return false; }
+}
+
+/** true only when the backend reports guidebook.enabled === true. Unknown / failure → false. */
+export async function guidebookIncluded(): Promise<boolean> {
+  try { return (await getFeatures()).guidebook?.enabled === true; } catch { return false; }
 }
 
 /** POST /api/v1/report-email. 'sent' and 'duplicate' both resolve. SERVICE_UNAVAILABLE → ApiError('unavailable'); everything else → 'send-error'. */

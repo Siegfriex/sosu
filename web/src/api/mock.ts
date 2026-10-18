@@ -52,6 +52,8 @@ export const emailDelivery = true;
 
 export const emailEnabled = async () => true;
 
+export const guidebookIncluded = async () => true;
+
 export async function generateDiagnosis(answers: Answers, opts: DiagnosisOptions = {}): Promise<Generated<SurveyReport>> {
   return { report: await mockDiagnosis(answers, opts), delivery: null };
 }

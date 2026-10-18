@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <script>
+      // iOS Safari zooms into any focused field under 16px (our inputs are 12–13px). maximum-scale=1 stops that
+      // focus zoom; iOS still allows pinch-zoom, so it is applied on iOS only (on Android it would block pinch-zoom).
+      (function () {
+        var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (ios) document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover');
+      })();
+    </script>
     <meta name="theme-color" content="#fafbfc" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>SOSU | 소규모 수공예 브랜드 릴스 진단</title>

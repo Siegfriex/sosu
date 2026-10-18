@@ -11,7 +11,7 @@ import * as http from './http';
 import * as mock from './mock';
 
 export interface RequestOptions { signal?: AbortSignal }
-export interface DiagnosisOptions extends RequestOptions { productImage?: File | null }
+export interface DiagnosisOptions extends RequestOptions { productImages?: File[] }
 export interface PrescriptionOptions extends RequestOptions { insightImages: File[] }
 
 /** Everything POST /api/v1/report-email needs, captured from the generation's success envelope (sessionStorage-safe). */
@@ -25,6 +25,8 @@ export interface SosuApi {
   readonly emailDelivery: boolean;
   /** Resolves true only when the backend reports email.enabled (http). Any failure → false (honest "준비 중"). */
   emailEnabled(): Promise<boolean>;
+  /** Resolves true only when the backend reports guidebook.enabled (the e-mail then carries the e-book link). */
+  guidebookIncluded(): Promise<boolean>;
   sendReportEmail(email: string, ticket?: DeliveryTicket | null): Promise<void>;
 }
 

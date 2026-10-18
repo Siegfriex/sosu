@@ -313,7 +313,7 @@ textarea.field__input { resize: vertical; min-height: 72px; }
 .thumb:active img { transition-duration: var(--press-in); opacity: .7; transform: scale(.96); }
 .thumb:focus-visible { outline: var(--stroke-focus) solid var(--color-border-focus); outline-offset: -2px; }
 .lightbox { position: fixed; inset: 0; z-index: var(--z-lightbox); display: flex; align-items: center; justify-content: center; }
-.lightbox__backdrop { position: absolute; inset: 0; z-index: var(--z-backdrop); background: var(--color-overlay-backdrop); opacity: var(--opacity-backdrop); }
+.lightbox__backdrop { position: absolute; inset: 0; z-index: 0; /* inside .lightbox's stacking context: must stay BELOW panel (1) and close (2), or the image is dimmed */ background: var(--color-overlay-backdrop); opacity: var(--opacity-backdrop); }
 .lightbox__panel { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: var(--space-12); max-width: min(90vw, 430px); }
 .lightbox__img { max-height: 80dvh; width: auto; max-width: 100%; border-radius: 12px; }
 .lightbox__close { position: fixed; top: 56px; right: max(16px, calc(50vw - 215px + 16px)); width: 40px; height: 40px; border-radius: 50%; background: var(--color-surface-control); color: var(--color-text-on-dark); display: inline-flex; align-items: center; justify-content: center; z-index: 2; }
