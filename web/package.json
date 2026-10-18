@@ -15,7 +15,8 @@
     "test:media": "node scripts/media-test.mjs",
     "verify": "npm run typecheck && npm run tokens:check && npm run e2e && npm run test:media && npm run test:adapter",
     "test:adapter": "node scripts/adapter-test.mjs",
-    "e2e:integration": "node scripts/integration-e2e.mjs"
+    "e2e:integration": "node scripts/integration-e2e.mjs",
+    "smoke:prod": "node scripts/prod-smoke.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

@@ -14,6 +14,11 @@
 | `POST /api/v1/diagnosis` | **문진표 → 릴스 진단서.** 설문 답변(+선택 제품 이미지 1장)을 받아 `DiagnosisReportV1`을 동기 반환 | `multipart/form-data`: `payload`(JSON 문자열 `SurveyDiagnosisRequestV1`), `product_image`(파일, 0..1) | `SuccessEnvelope<DiagnosisReportV1>` |
 | `POST /api/v1/prescription` | **릴스 처방전.** Reel URL + Insight 스크린샷 정확히 3장을 받아 `PrescriptionReportV1`을 동기 반환 | `multipart/form-data`: `payload`(JSON 문자열 `PrescriptionRequestV1`), `insight_images`(파일 ×3) | `SuccessEnvelope<PrescriptionReportV1>` |
 
+| `GET /api/v1/features` | 기능 개방 상태(추론/이메일/이미지 저장/리서치) + knowledge_version + build SHA. 봉투 없음. 프론트는 시작 시 조회해 비활성 기능을 숨긴다 | — | `{"contract_version":"1.0","inference":{"enabled":bool,"reason":str or null},"email":{...},"image_storage":{"enabled":false,...},"research":{...},"knowledge_version":str,"build":str or null}` |
+| `POST /api/v1/report-email` | 서버 서명(`delivery_token`)이 검증된 리포트를 이메일로 발송(Resend). 공개 배포 기본 비활성 → `SERVICE_UNAVAILABLE` | JSON `ReportEmailRequestV1`: `kind`, `report`(성공 봉투의 `data` 그대로), `request_id`, `delivery_token`, `email` | `SuccessEnvelope<ReportEmailResultV1>` (`data.status`: `sent` or `duplicate`) |
+
+- 성공 봉투에는 선택 필드 `delivery_token`(`"<issued_at_unix>.<hmac hex>"`, 서명 비밀 미설정 시 `null`, 24h 유효)이 있다. 이메일 발송 시 그대로 되돌려 보낸다.
+- 공개 배포(Vercel/production)에서는 AI 추론이 운영자 개방 전까지 `503 SERVICE_UNAVAILABLE`로 닫혀 있다(fail-closed). 응답 헤더 `X-SOSU-Build`는 배포 커밋 SHA(12자).
 - 두 POST는 **동기 요청 1회**다. 진행률 이벤트(SSE/WebSocket/job polling)는 v1 계약에 없다. 프론트는 indeterminate 로딩을 쓴다.
 - 실행 시간 한도: 전체 deadline **180s** (단계별 observation 45s / synthesis 90s / repair 40s). 초과 시 `MODEL_TIMEOUT`. 클라이언트 AbortSignal은 180s보다 길게 잡는다.
 - 요청 헤더 `X-Request-ID`(선택, ≤64자 `[A-Za-z0-9._-]`)는 그대로 에코되고 봉투의 `request_id`가 된다. 없으면 서버가 생성한다.
@@ -215,6 +220,9 @@ Q19는 원본 문진에 존재하지 않는다. `answers`에 `q19_*` 필드가 �
 | `MODEL_CONTENT_ERROR` | 502 | true | diagnosis, prescription | 모델이 유효한 내용을 반환하지 못함(안전 차단, 토큰 초과 등). 공통 retry |
 | `REPAIR_FAILED` | 502 | true | diagnosis, prescription | 1회 수리 후에도 의미 검증 실패. 공통 retry |
 | `INTERNAL_ERROR` | 500 | false | diagnosis, prescription | 서버 내부 오류. 공통 오류 화면 |
+| `SERVICE_UNAVAILABLE` | 503 | false | diagnosis, prescription | 공개 배포에서 AI 생성/이메일이 운영자에 의해 닫혀 있음(fail-closed). retry 금지, 안내 화면. `GET /api/v1/features`로 사전 확인 |
+| `RATE_LIMITED` | 429 | true | diagnosis, prescription | 인스턴스별 백스톱 rate limit(HTTP 429). 잠시 후 retry |
+| `EMAIL_DELIVERY_FAILED` | 502 | true | diagnosis, prescription | `POST /api/v1/report-email` 발송 실패. retry 가능(같은 token+email은 idempotent) |
 
 규칙:
 1. `retryable:true` → 입력(draft)을 보존한 채 같은 요청을 **그대로 재시도**할 수 있다(공통 "다시 시도" 화면). 백엔드 상태가 없으므로 멱등하다.

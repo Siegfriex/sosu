@@ -307,6 +307,65 @@ await check('INT-P6 non-reel Instagram URL (/p/) blocked client-side', async () 
   const p = await path(); assert(!String(p).endsWith('/generating') && !String(p).endsWith('/result'), `advanced to ${p}`);
 });
 
+/* ---------- Phase 2 (browser-stubbed): the fake server cannot switch inference/email on or off, so these checks stub
+   only the named API responses in Chrome (request interception) and drive the real production build. ---------- */
+const FIXDIR = resolve(PY, 'contracts/fixtures');
+const ACAO = { 'Access-Control-Allow-Origin': new URL(BASE).origin, 'Access-Control-Expose-Headers': 'X-Request-ID' };
+async function stubApi(routes) {
+  const seen = [];
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    if (req.isInterceptResolutionHandled()) return;
+    const u = req.url(); const m = req.method();
+    const hit = m !== 'OPTIONS' && u.startsWith(`${API}/api/v1/`) && Object.keys(routes).find((k) => u.split('?')[0].endsWith(k));
+    if (!hit) return req.continue();
+    seen.push({ url: u, method: m, body: req.postData() ?? null });
+    const [status, body] = routes[hit];
+    req.respond({ status, headers: ACAO, contentType: 'application/json', body: JSON.stringify(body) });
+  });
+  return seen;
+}
+const errEnv = (code, retryable) => ({ ok: false, request_id: 'stub-err', contract_version: '1.0', error: { code, message: code, retryable, details: [] } });
+const diagOk = () => ({ ...JSON.parse(readFileSync(resolve(FIXDIR, 'diagnosis.success.json'), 'utf8')), delivery_token: '1789290000.0123abcd' });
+
+await freshPage();
+await check('INT-X1 SERVICE_UNAVAILABLE (503, retryable=false) → honest "준비 중" error screen, no retry button', async () => {
+  const seen = await stubApi({ '/diagnosis': [503, errEnv('SERVICE_UNAVAILABLE', false)] });
+  await fillSurvey({ withChoices: false }); await byText('진단'); await waitPath('/error', 30000); await shot('X1_unavailable', false);
+  const kind = await page.$eval('[data-error-kind]', (el) => el.getAttribute('data-error-kind'));
+  const retry = await page.$$('xpath/.//button[normalize-space(.)="다시 시도"]');
+  const t = await text();
+  assertEq([kind, retry.length, t.includes('준비 중'), t.includes('그대로 남아')], ['unavailable', 0, true, true], 'unavailable UX');
+  await sleep(1500); assertEq(seen.filter((r) => r.url.endsWith('/diagnosis')).length, 1, 'no automatic retry');
+  await byText('입력 화면으로 돌아가기'); await waitPath('/upload');
+  await page.goto(`${BASE}/survey/step/1`, { waitUntil: 'networkidle0' });
+  assertEq(await page.$eval(qInput('q01'), (el) => el.value), '통합테스트 공방', 'answers kept after back');
+  return t.match(/지금은[^.]*/)?.[0];
+});
+
+await freshPage();
+await check('INT-X2 email enabled + delivery_token → POST /report-email {kind,report,request_id,delivery_token,email} → /delivered', async () => {
+  const seen = await stubApi({ '/diagnosis': [200, diagOk()], '/features': [200, { contract_version: '1.0', email: { enabled: true, reason: null } }], '/report-email': [200, { ok: true, request_id: 'stub-mail', contract_version: '1.0', delivery_token: null, data: { status: 'duplicate' } }] });
+  await fillSurvey({ withChoices: false }); await byText('진단'); await waitPath('/result', 30000);
+  await byText('진단서 받기'); await waitPath('/delivery');
+  await page.waitForSelector('form[data-delivery="available"]', { timeout: 8000 });
+  await page.type('input[type=email]', 'sosu@example.com'); await byText('메일로 진단서 받기'); await waitPath('/delivered', 10000); await shot('X2_delivered', false);
+  const mail = seen.find((r) => r.url.endsWith('/report-email')); assert(mail, 'no report-email request');
+  const b = JSON.parse(mail.body); const fx = diagOk();
+  assertEq([b.kind, b.request_id, b.delivery_token, b.email, JSON.stringify(b.report) === JSON.stringify(fx.data)], ['diagnosis', fx.request_id, fx.delivery_token, 'sosu@example.com', true], 'body');
+});
+
+await freshPage();
+await check('INT-X3 email disabled (features) → "준비 중" unavailable form; direct /delivered never shows success', async () => {
+  const seen = await stubApi({ '/diagnosis': [200, diagOk()], '/features': [200, { contract_version: '1.0', email: { enabled: false, reason: 'disabled' } }] });
+  await fillSurvey({ withChoices: false }); await byText('진단'); await waitPath('/result', 30000);
+  await byText('진단서 받기'); await waitPath('/delivery');
+  await page.waitForSelector('form[data-delivery="unavailable"] [data-delivery-unavailable]', { timeout: 8000 });
+  await page.goto(`${BASE}/survey/delivered`, { waitUntil: 'networkidle0' }); await sleep(500);
+  const p = await path(); assert(!String(p).endsWith('/delivered'), `reached ${p}`);
+  assertEq(seen.filter((r) => r.url.endsWith('/report-email')).length, 0, 'no email request');
+});
+
 await browser.close();
 const ok = summary();
 writeFileSync(resolve(SHOTS, 'results.json'), JSON.stringify({ ok, api: API, web: BASE, evidence, at: new Date().toISOString() }, null, 2));

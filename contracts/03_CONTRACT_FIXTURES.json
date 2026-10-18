@@ -143,7 +143,8 @@
           "제작 과정 릴스를 주 1회 고정 포맷으로 만들어 아이디어 고갈을 줄입니다.",
           "완성품 사진 릴스는 유지하되, 반드시 빛 반사 컷을 첫 장면으로 배치합니다."
         ]
-      }
+      },
+      "delivery_token": null
     },
     "errors": {
       "retryable": {
@@ -213,6 +214,32 @@
             "details": [
               "reel_types[1].reason violates creator constraint: voice not allowed"
             ]
+          }
+        },
+        "RATE_LIMITED": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-rate-limited",
+          "contract_version": "1.0",
+          "error": {
+            "code": "RATE_LIMITED",
+            "message": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+            "retryable": true,
+            "details": [
+              {
+                "scope": "per_instance"
+              }
+            ]
+          }
+        },
+        "EMAIL_DELIVERY_FAILED": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-email-delivery-failed",
+          "contract_version": "1.0",
+          "error": {
+            "code": "EMAIL_DELIVERY_FAILED",
+            "message": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+            "retryable": true,
+            "details": []
           }
         }
       },
@@ -298,6 +325,21 @@
             "retryable": false,
             "details": []
           }
+        },
+        "SERVICE_UNAVAILABLE": {
+          "ok": false,
+          "request_id": "fixture-diagnosis-service-unavailable",
+          "contract_version": "1.0",
+          "error": {
+            "code": "SERVICE_UNAVAILABLE",
+            "message": "현재 AI 생성 서비스가 일시 중단되어 있습니다. 잠시 후 다시 이용해 주세요.",
+            "retryable": false,
+            "details": [
+              {
+                "reason": "public_inference_disabled"
+              }
+            ]
+          }
         }
       }
     }
@@ -349,7 +391,8 @@
           ],
           "description": "무드는 유지하되 초반 정보 밀도를 높입니다. 첫 컷은 설명 없이 결과부터 보여줍니다."
         }
-      }
+      },
+      "delivery_token": null
     },
     "errors": {
       "retryable": {
@@ -419,6 +462,32 @@
             "details": [
               "reel_types[1].reason violates creator constraint: voice not allowed"
             ]
+          }
+        },
+        "RATE_LIMITED": {
+          "ok": false,
+          "request_id": "fixture-prescription-rate-limited",
+          "contract_version": "1.0",
+          "error": {
+            "code": "RATE_LIMITED",
+            "message": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+            "retryable": true,
+            "details": [
+              {
+                "scope": "per_instance"
+              }
+            ]
+          }
+        },
+        "EMAIL_DELIVERY_FAILED": {
+          "ok": false,
+          "request_id": "fixture-prescription-email-delivery-failed",
+          "contract_version": "1.0",
+          "error": {
+            "code": "EMAIL_DELIVERY_FAILED",
+            "message": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+            "retryable": true,
+            "details": []
           }
         }
       },
@@ -522,6 +591,21 @@
             "message": "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
             "retryable": false,
             "details": []
+          }
+        },
+        "SERVICE_UNAVAILABLE": {
+          "ok": false,
+          "request_id": "fixture-prescription-service-unavailable",
+          "contract_version": "1.0",
+          "error": {
+            "code": "SERVICE_UNAVAILABLE",
+            "message": "현재 AI 생성 서비스가 일시 중단되어 있습니다. 잠시 후 다시 이용해 주세요.",
+            "retryable": false,
+            "details": [
+              {
+                "reason": "public_inference_disabled"
+              }
+            ]
           }
         }
       }

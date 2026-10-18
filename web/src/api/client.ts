@@ -14,12 +14,18 @@ export interface RequestOptions { signal?: AbortSignal }
 export interface DiagnosisOptions extends RequestOptions { productImage?: File | null }
 export interface PrescriptionOptions extends RequestOptions { insightImages: File[] }
 
+/** Everything POST /api/v1/report-email needs, captured from the generation's success envelope (sessionStorage-safe). */
+export interface DeliveryTicket { kind: 'diagnosis' | 'prescription'; report: unknown; requestId: string; token: string | null }
+export interface Generated<T> { report: T; delivery: DeliveryTicket | null }
+
 export interface SosuApi {
-  generateDiagnosis(answers: Answers, opts?: DiagnosisOptions): Promise<SurveyReport>;
-  generatePrescription(url: string, opts: PrescriptionOptions): Promise<PrescriptionReport>;
-  /** false → no backend endpoint; the delivery screen shows an honest "unavailable" state. */
+  generateDiagnosis(answers: Answers, opts?: DiagnosisOptions): Promise<Generated<SurveyReport>>;
+  generatePrescription(url: string, opts: PrescriptionOptions): Promise<Generated<PrescriptionReport>>;
+  /** true → email delivery always offered (mock). false → only after GET /features says email.enabled and a token exists. */
   readonly emailDelivery: boolean;
-  sendReportEmail(email: string): Promise<void>;
+  /** Resolves true only when the backend reports email.enabled (http). Any failure → false (honest "준비 중"). */
+  emailEnabled(): Promise<boolean>;
+  sendReportEmail(email: string, ticket?: DeliveryTicket | null): Promise<void>;
 }
 
 export type ApiMode = 'http' | 'mock';

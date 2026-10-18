@@ -2,10 +2,12 @@
 //   timeout    — client deadline or MODEL_TIMEOUT → ERROR screen (retry)
 //   error      — retryable server/model/network failure or INTERNAL_ERROR → ERROR screen (retry)
 //   input      — non-retryable input error (INVALID_* / INSUFFICIENT_INPUT / IMAGE_TOO_LARGE) → back to the input screen
-//   send-error — email delivery failure (mock only)
+//   unavailable — SERVICE_UNAVAILABLE (503, retryable=false): AI generation / email is switched off by the owner → honest
+//                 "준비 중" state, never an auto-retry loop
+//   send-error — email delivery failure (EMAIL_DELIVERY_FAILED, rejected token, network) → delivery form error
 import type { ErrorCode } from './contract';
 
-export type ApiErrorKind = 'timeout' | 'error' | 'input' | 'send-error';
+export type ApiErrorKind = 'timeout' | 'error' | 'input' | 'send-error' | 'unavailable';
 
 export interface ApiErrorInit { code?: ErrorCode | 'NETWORK' | 'MALFORMED_RESPONSE' | 'CLIENT_TIMEOUT'; retryable?: boolean; requestId?: string; httpStatus?: number }
 
@@ -20,7 +22,7 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.kind = kind;
     this.code = init.code;
-    this.retryable = init.retryable ?? kind !== 'input';
+    this.retryable = init.retryable ?? (kind !== 'input' && kind !== 'unavailable');
     this.requestId = init.requestId;
     this.httpStatus = init.httpStatus;
   }
@@ -28,7 +30,13 @@ export class ApiError extends Error {
 
 export const isAbortError = (e: unknown) => e instanceof DOMException && e.name === 'AbortError';
 
-export const generationErrorKind = (e: unknown): 'timeout' | 'error' => (e instanceof ApiError && e.kind === 'timeout' ? 'timeout' : 'error');
+// 'rate-limited' = RATE_LIMITED (429, retryable): ERROR screen with "요청이 많아요" copy + manual retry.
+export type GenerationErrorKind = 'timeout' | 'error' | 'unavailable' | 'rate-limited';
+export function generationErrorKind(e: unknown): GenerationErrorKind {
+  if (!(e instanceof ApiError)) return 'error';
+  if (e.kind === 'timeout' || e.kind === 'unavailable') return e.kind;
+  return e.code === 'RATE_LIMITED' ? 'rate-limited' : 'error';
+}
 
 export const isInputError = (e: unknown): e is ApiError => e instanceof ApiError && e.kind === 'input';
 

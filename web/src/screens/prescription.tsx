@@ -5,12 +5,12 @@ import insight1 from '../assets/insight-1.jpg';
 import insight2 from '../assets/insight-2.jpg';
 import insight3 from '../assets/insight-3.jpg';
 import { API_MODE, api } from '../api/client';
-import { generationErrorKind, inputErrorMessage, isAbortError, isInputError } from '../api/errors';
+import { ApiError, generationErrorKind, inputErrorMessage, isAbortError, isInputError } from '../api/errors';
 import { IMAGE_ACCEPT } from '../api/contract';
 import { MediaPrepareError } from '../media/compressImage';
 import { prepareInsightImages } from '../media/prepareInsightImage';
 import { isValidEmail, isValidInstagramUrl } from '../api/validation';
-import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, prescriptionRoute, useWorkflows, type PrescriptionStatus } from '../state/workflows';
+import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, prescriptionRoute, useEmailAvailability, useWorkflows, type PrescriptionStatus } from '../state/workflows';
 import { ContentCard, Screen, SectionHeader } from '../components/shell';
 import { Button, InlineMessage, URLField } from '../components/controls';
 import { DeliverySuccess, EmailDeliveryForm, ErrorState, ExampleThumbnail, FileUploader, Lightbox, LoadingState, ReportSection, type DeliveryFormState } from '../components/blocks';
@@ -84,10 +84,10 @@ export function PrescriptionGenerating() {
         catch (e) { if (e instanceof MediaPrepareError) return backToInput(e.message); throw e; }
         if (ctrl.signal.aborted) return; // StrictMode first mount / unmounted while preparing
       }
-      const result = await api.generatePrescription(p.url, { signal: ctrl.signal, insightImages });
+      const { report: result, delivery } = await api.generatePrescription(p.url, { signal: ctrl.signal, insightImages });
       if (ctrl.signal.aborted) return; // stale response
       generationTicket.prescription = false;
-      latest.current.patch({ result, errorKind: null, inputError: null }); latest.current.navigate(prescriptionRoute.RESULT, { replace: true });
+      latest.current.patch({ result, delivery, sent: false, errorKind: null, inputError: null }); latest.current.navigate(prescriptionRoute.RESULT, { replace: true });
     })().catch((e: unknown) => {
       if (isAbortError(e) || ctrl.signal.aborted) return;
       generationTicket.prescription = false;
@@ -109,7 +109,7 @@ export function PrescriptionError() {
   useSyncStatus('ERROR');
   return (
     <Screen theme="dark" workflow="prescription" status="result">
-      <ErrorState workflow="prescription" kind={prescription.errorKind ?? 'error'} onRetry={() => { generationTicket.prescription = true; navigate(prescriptionRoute.GENERATING); }} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} />
+      <ErrorState workflow="prescription" kind={prescription.errorKind ?? 'error'} onRetry={() => { generationTicket.prescription = true; navigate(prescriptionRoute.GENERATING); }} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} onBack={() => navigate(prescriptionRoute.INPUT)} />
     </Screen>
   );
 }
@@ -139,16 +139,17 @@ export function PrescriptionDelivery() {
   const { prescription, patchPrescription, resetPrescription } = useWorkflows();
   useSyncStatus('DELIVERY');
   const [state, setState] = useState<DeliveryFormState>('empty');
+  const [availability, setAvailability] = useEmailAvailability(prescription.delivery);
   const submit = async () => {
     if (!isValidEmail(prescription.email)) return setState('invalid-email');
     setState('submitting');
-    try { await api.sendReportEmail(prescription.email); navigate(prescriptionRoute.DELIVERED); }
-    catch { setState('send-error'); }
+    try { await api.sendReportEmail(prescription.email, prescription.delivery); patchPrescription({ sent: true }); navigate(prescriptionRoute.DELIVERED); }
+    catch (e) { if (e instanceof ApiError && e.kind === 'unavailable') { setAvailability('unavailable'); setState('empty'); } else setState('send-error'); }
   };
   return (
     <Screen theme="dark" workflow="prescription" status="delivery">
       <EmailDeliveryForm docName="처방전" email={prescription.email} onEmail={(email) => { patchPrescription({ email }); if (state !== 'submitting') setState('empty'); }}
-        state={state} onSubmit={submit} unavailable={!api.emailDelivery} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} />
+        state={state} onSubmit={submit} unavailable={availability === 'unavailable'} checking={availability === 'checking'} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} />
     </Screen>
   );
 }
@@ -157,9 +158,10 @@ export function PrescriptionDelivered() {
   const navigate = useNavigate();
   const { prescription, resetPrescription } = useWorkflows();
   useSyncStatus('DELIVERED');
-  // No email backend in http mode: a direct visit must not show a fake "sent" screen.
-  useEffect(() => { if (!api.emailDelivery) navigate(prescriptionRoute.DELIVERY, { replace: true }); }, [navigate]);
-  if (!api.emailDelivery) return null;
+  // http mode: only reachable after the backend confirmed sent/duplicate — a direct visit never shows a fake "sent" screen.
+  const confirmed = api.emailDelivery || prescription.sent;
+  useEffect(() => { if (!confirmed) navigate(prescriptionRoute.DELIVERY, { replace: true }); }, [confirmed, navigate]);
+  if (!confirmed) return null;
   return (
     <Screen theme="dark" workflow="prescription" status="delivery">
       <DeliverySuccess docName="처방전" email={prescription.email} onReset={() => { resetPrescription(); navigate(prescriptionRoute.INPUT); }} />

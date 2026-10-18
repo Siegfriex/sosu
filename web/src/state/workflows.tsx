@@ -2,10 +2,12 @@
 // Persistence = memory + sessionStorage (file binaries stay in memory only).
 // Loading stage is presentation-only (LoadingState) and is not part of workflow state.
 
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react';
 import { migrateAnswers, type Answers } from '../data/questions';
 import { IMAGE_TYPE_RE } from '../api/contract';
 import type { PrescriptionReport, SurveyReport } from '../data/report';
+import { api, type DeliveryTicket } from '../api/client';
+import type { GenerationErrorKind } from '../api/errors';
 
 export type SurveyStatus = 'STEP_1' | 'STEP_2' | 'STEP_3' | 'UPLOAD' | 'GENERATING' | 'RESULT' | 'DELIVERY' | 'DELIVERED' | 'ERROR';
 export type PrescriptionStatus = 'INPUT' | 'GENERATING' | 'RESULT' | 'DELIVERY' | 'DELIVERED' | 'ERROR';
@@ -18,7 +20,11 @@ export interface SurveyState {
   files: FileMeta[];
   result: SurveyReport | null;
   email: string;
-  errorKind: 'timeout' | 'error' | null;
+  errorKind: GenerationErrorKind | null;
+  /** http mode: what /report-email needs (raw contract data + request_id + delivery_token). null in mock / when unsigned. */
+  delivery: DeliveryTicket | null;
+  /** true once the email backend confirmed sent/duplicate — /delivered never shows otherwise in http mode. */
+  sent: boolean;
   /** Actionable, non-retryable input problem shown inline (role=alert) on the input screen. */
   inputError: string | null;
 }
@@ -28,12 +34,16 @@ export interface PrescriptionState {
   files: FileMeta[];
   result: PrescriptionReport | null;
   email: string;
-  errorKind: 'timeout' | 'error' | null;
+  errorKind: GenerationErrorKind | null;
+  /** http mode: what /report-email needs (raw contract data + request_id + delivery_token). null in mock / when unsigned. */
+  delivery: DeliveryTicket | null;
+  /** true once the email backend confirmed sent/duplicate — /delivered never shows otherwise in http mode. */
+  sent: boolean;
   inputError: string | null;
 }
 
-export const initialSurvey: SurveyState = { status: 'STEP_1', answers: {}, files: [], result: null, email: '', errorKind: null, inputError: null };
-export const initialPrescription: PrescriptionState = { status: 'INPUT', url: '', files: [], result: null, email: '', errorKind: null, inputError: null };
+export const initialSurvey: SurveyState = { status: 'STEP_1', answers: {}, files: [], result: null, email: '', errorKind: null, inputError: null, delivery: null, sent: false };
+export const initialPrescription: PrescriptionState = { status: 'INPUT', url: '', files: [], result: null, email: '', errorKind: null, inputError: null, delivery: null, sent: false };
 
 type Patch<S> = Partial<S>;
 type Action<S> = { type: 'patch'; patch: Patch<S> } | { type: 'reset' };
@@ -120,3 +130,19 @@ export const prescriptionRoute: Record<PrescriptionStatus, string> = {
   INPUT: '/prescription', GENERATING: '/prescription/generating', RESULT: '/prescription/result',
   DELIVERY: '/prescription/delivery', DELIVERED: '/prescription/delivered', ERROR: '/prescription/error',
 };
+
+/** Email delivery availability for the delivery screen.
+ *  mock → always 'available'. http → 'checking' until GET /features answers; 'available' only when email.enabled and this
+ *  report carries a delivery_token; anything else (disabled, unknown, fetch failure, no token) → 'unavailable'. */
+export type EmailAvailability = 'checking' | 'available' | 'unavailable';
+export function useEmailAvailability(ticket: DeliveryTicket | null): [EmailAvailability, (a: EmailAvailability) => void] {
+  const hasToken = !!ticket?.token;
+  const [state, setState] = useState<EmailAvailability>(api.emailDelivery ? 'available' : hasToken ? 'checking' : 'unavailable');
+  useEffect(() => {
+    if (api.emailDelivery || !hasToken) return;
+    let live = true;
+    api.emailEnabled().then((on) => { if (live) setState(on ? 'available' : 'unavailable'); });
+    return () => { live = false; };
+  }, [hasToken]);
+  return [state, setState];
+}

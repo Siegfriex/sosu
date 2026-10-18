@@ -132,16 +132,19 @@ export function PokingCat({ className = '' }: { className?: string }) {
   );
 }
 
-export function ErrorState({ workflow, kind, onRetry, onReset }: { workflow: 'survey' | 'prescription'; kind: 'timeout' | 'error'; onRetry: () => void; onReset: () => void }) {
+// kind 'unavailable' = SERVICE_UNAVAILABLE (owner switched AI generation off): honest copy, no retry button (no retry loop).
+// onBack: non-destructive return to the input screen (answers kept) — the primary action when the service is unavailable.
+export function ErrorState({ workflow, kind, onRetry, onReset, onBack }: { workflow: 'survey' | 'prescription'; kind: 'timeout' | 'error' | 'unavailable' | 'rate-limited'; onRetry: () => void; onReset: () => void; onBack?: () => void }) {
   const noun = workflow === 'survey' ? '진단' : '처방';
+  const unavailable = kind === 'unavailable';
   return (
-    <div className="state state--error" role="alert">
+    <div className="state state--error" role="alert" data-error-kind={kind}>
       <PokingCat className="state__art state__art--sm" />
-      <h2 className="t-section">{kind === 'timeout' ? `${noun}이 예상보다 오래 걸리고 있어요` : `${noun}을 완료하지 못했어요`}</h2>
-      <p className="state__msg state__meta t-body">{'입력하신 내용은 그대로 남아 있어요.\n다시 시도해 주세요.'}</p>
+      <h2 className="t-section">{unavailable ? `지금은 AI ${noun} 서비스를 준비 중이에요` : kind === 'rate-limited' ? '요청이 많아요' : kind === 'timeout' ? `${noun}이 예상보다 오래 걸리고 있어요` : `${noun}을 완료하지 못했어요`}</h2>
+      <p className="state__msg state__meta t-body">{unavailable ? '입력하신 내용은 그대로 남아 있어요.\n서비스가 열리면 다시 이용해 주세요.' : kind === 'rate-limited' ? '입력하신 내용은 그대로 남아 있어요.\n잠시 후 다시 시도해 주세요.' : '입력하신 내용은 그대로 남아 있어요.\n다시 시도해 주세요.'}</p>
       <div className="state__actions">
-        <Button size="md" onClick={onRetry}>다시 시도</Button>
-        <Button variant="secondary" size="md" onClick={onReset}>첫 화면으로 돌아가기</Button>
+        {unavailable ? onBack && <Button size="md" onClick={onBack}>입력 화면으로 돌아가기</Button> : <Button size="md" onClick={onRetry}>다시 시도</Button>}
+        <Button variant={unavailable && !onBack ? 'primary' : 'secondary'} size="md" onClick={onReset}>첫 화면으로 돌아가기</Button>
       </div>
     </div>
   );
@@ -170,13 +173,14 @@ export function ReportBrandTable({ brand }: { brand: { name: string; material: s
 
 /* ---------- EmailDeliveryForm (31:551) + DeliverySuccess (31:474) ---------- */
 export type DeliveryFormState = 'empty' | 'invalid-email' | 'submitting' | 'send-error';
-export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, onReset, unavailable = false }:
-  { docName: '진단서' | '처방전'; email: string; onEmail: (v: string) => void; state: DeliveryFormState; onSubmit: () => void; onReset: () => void; unavailable?: boolean }) {
-  // unavailable: no email backend exists yet (http mode) — never fake a success.
-  const valid = isValidEmail(email) && !unavailable;
+export function EmailDeliveryForm({ docName, email, onEmail, state, onSubmit, onReset, unavailable = false, checking = false }:
+  { docName: '진단서' | '처방전'; email: string; onEmail: (v: string) => void; state: DeliveryFormState; onSubmit: () => void; onReset: () => void; unavailable?: boolean; checking?: boolean }) {
+  // unavailable: email backend disabled / unknown / no delivery token (http mode) — never fake a success.
+  // checking: GET /features in flight — submit stays disabled until the backend says email is enabled.
+  const valid = isValidEmail(email) && !unavailable && !checking;
   const submitting = state === 'submitting';
   return (
-    <form className="delivery" noValidate data-delivery={unavailable ? 'unavailable' : 'available'} onSubmit={(e) => { e.preventDefault(); if (!submitting && !unavailable) onSubmit(); }}>
+    <form className="delivery" noValidate data-delivery={unavailable ? 'unavailable' : checking ? 'checking' : 'available'} onSubmit={(e) => { e.preventDefault(); if (!submitting && !unavailable && !checking) onSubmit(); }}>
       <PokingCat className="delivery__art" />
       <p className="delivery__msg t-body">{`${docName}를 제공해 드리기 위해\n이메일 주소를 입력해 주세요.`}</p>
       <div className="delivery__form">

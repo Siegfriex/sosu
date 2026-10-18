@@ -4,13 +4,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import catGreeting from '../assets/cat-greeting.png';
 import helloSvg from '../assets/hello.svg?raw';
 import { API_MODE, api } from '../api/client';
-import { generationErrorKind, inputErrorMessage, isAbortError, isInputError } from '../api/errors';
+import { ApiError, generationErrorKind, inputErrorMessage, isAbortError, isInputError } from '../api/errors';
 import { IMAGE_ACCEPT } from '../api/contract';
 import { MediaPrepareError } from '../media/compressImage';
 import { prepareProductImage } from '../media/prepareProductImage';
 import { isValidEmail } from '../api/validation';
 import { SECTIONS, STEP_SECTIONS, type AnswerValue } from '../data/questions';
-import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, surveyRoute, useWorkflows, type SurveyStatus } from '../state/workflows';
+import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, surveyRoute, useEmailAvailability, useWorkflows, type SurveyStatus } from '../state/workflows';
 import { ContentCard, Divider, Screen, SectionHeader } from '../components/shell';
 import { Button, InlineMessage, QuestionBlock } from '../components/controls';
 import { DeliverySuccess, EmailDeliveryForm, ErrorState, FileUploader, LoadingState, ReportBrandTable, ReportSection, type DeliveryFormState } from '../components/blocks';
@@ -108,10 +108,10 @@ export function SurveyGenerating() {
         }
         if (ctrl.signal.aborted) return; // StrictMode first mount / unmounted while preparing
       }
-      const result = await api.generateDiagnosis(s.answers, { signal: ctrl.signal, productImage });
+      const { report: result, delivery } = await api.generateDiagnosis(s.answers, { signal: ctrl.signal, productImage });
       if (ctrl.signal.aborted) return; // stale response
       generationTicket.survey = false;
-      latest.current.patch({ result, errorKind: null, inputError: null }); latest.current.navigate(surveyRoute.RESULT, { replace: true });
+      latest.current.patch({ result, delivery, sent: false, errorKind: null, inputError: null }); latest.current.navigate(surveyRoute.RESULT, { replace: true });
     })().catch((e: unknown) => {
       if (isAbortError(e) || ctrl.signal.aborted) return;
       generationTicket.survey = false;
@@ -133,7 +133,7 @@ export function SurveyError() {
   useSyncStatus('ERROR');
   return (
     <Screen theme="dark" workflow="survey" status="result">
-      <ErrorState workflow="survey" kind={survey.errorKind ?? 'error'} onRetry={() => { generationTicket.survey = true; navigate(surveyRoute.GENERATING); }} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} />
+      <ErrorState workflow="survey" kind={survey.errorKind ?? 'error'} onRetry={() => { generationTicket.survey = true; navigate(surveyRoute.GENERATING); }} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} onBack={() => navigate(surveyRoute.UPLOAD)} />
     </Screen>
   );
 }
@@ -179,16 +179,17 @@ export function SurveyDelivery() {
   const { survey, patchSurvey, resetSurvey } = useWorkflows();
   useSyncStatus('DELIVERY');
   const [state, setState] = useState<DeliveryFormState>('empty');
+  const [availability, setAvailability] = useEmailAvailability(survey.delivery);
   const submit = async () => {
     if (!isValidEmail(survey.email)) return setState('invalid-email');
     setState('submitting');
-    try { await api.sendReportEmail(survey.email); navigate(surveyRoute.DELIVERED); }
-    catch { setState('send-error'); }
+    try { await api.sendReportEmail(survey.email, survey.delivery); patchSurvey({ sent: true }); navigate(surveyRoute.DELIVERED); }
+    catch (e) { if (e instanceof ApiError && e.kind === 'unavailable') { setAvailability('unavailable'); setState('empty'); } else setState('send-error'); }
   };
   return (
     <Screen theme="dark" workflow="survey" status="delivery">
       <EmailDeliveryForm docName="진단서" email={survey.email} onEmail={(email) => { patchSurvey({ email }); if (state !== 'submitting') setState('empty'); }}
-        state={state} onSubmit={submit} unavailable={!api.emailDelivery} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} />
+        state={state} onSubmit={submit} unavailable={availability === 'unavailable'} checking={availability === 'checking'} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} />
     </Screen>
   );
 }
@@ -197,9 +198,10 @@ export function SurveyDelivered() {
   const navigate = useNavigate();
   const { survey, resetSurvey } = useWorkflows();
   useSyncStatus('DELIVERED');
-  // No email backend in http mode: a direct visit must not show a fake "sent" screen.
-  useEffect(() => { if (!api.emailDelivery) navigate(surveyRoute.DELIVERY, { replace: true }); }, [navigate]);
-  if (!api.emailDelivery) return null;
+  // http mode: only reachable after the backend confirmed sent/duplicate — a direct visit never shows a fake "sent" screen.
+  const confirmed = api.emailDelivery || survey.sent;
+  useEffect(() => { if (!confirmed) navigate(surveyRoute.DELIVERY, { replace: true }); }, [confirmed, navigate]);
+  if (!confirmed) return null;
   return (
     <Screen theme="dark" workflow="survey" status="delivery">
       <DeliverySuccess docName="진단서" email={survey.email} onReset={() => { resetSurvey(); navigate(surveyRoute.STEP_1); }} />

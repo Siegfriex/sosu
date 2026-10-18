@@ -53,11 +53,19 @@ export interface PrescriptionReportV1 {
 
 export type ErrorCode =
   | 'INVALID_REQUEST' | 'INSUFFICIENT_INPUT' | 'INVALID_IMAGE_TYPE' | 'IMAGE_TOO_LARGE' | 'INVALID_IMAGE_COUNT' | 'INVALID_INSTAGRAM_URL'
-  | 'MODEL_TIMEOUT' | 'MODEL_PROVIDER_ERROR' | 'MODEL_SCHEMA_ERROR' | 'MODEL_CONTENT_ERROR' | 'REPAIR_FAILED' | 'INTERNAL_ERROR';
+  | 'MODEL_TIMEOUT' | 'MODEL_PROVIDER_ERROR' | 'MODEL_SCHEMA_ERROR' | 'MODEL_CONTENT_ERROR' | 'REPAIR_FAILED' | 'INTERNAL_ERROR'
+  // Phase 2 additive codes (SOSU_py/.sprint/CONTRACT_DELTA.md)
+  | 'SERVICE_UNAVAILABLE' | 'EMAIL_DELIVERY_FAILED' | 'RATE_LIMITED';
 
 export const INPUT_ERROR_CODES: readonly ErrorCode[] = ['INVALID_REQUEST', 'INSUFFICIENT_INPUT', 'INVALID_IMAGE_TYPE', 'IMAGE_TOO_LARGE', 'INVALID_IMAGE_COUNT', 'INVALID_INSTAGRAM_URL'];
 
-export interface SuccessEnvelope<T> { ok: true; request_id: string; contract_version: string; data: T }
+/** delivery_token: opaque "<issued_at>.<hmac>" (null/absent when the server cannot sign) — echoed to /report-email. */
+export interface SuccessEnvelope<T> { ok: true; request_id: string; contract_version: string; data: T; delivery_token?: string | null }
+
+/** GET /api/v1/features (not enveloped). */
+export interface FeatureFlag { enabled: boolean; reason?: string | null }
+export interface FeaturesV1 { contract_version?: string; inference?: FeatureFlag; email?: FeatureFlag; image_storage?: FeatureFlag; research?: FeatureFlag; knowledge_version?: string; build?: string }
+export interface ReportEmailRequestV1 { kind: 'diagnosis' | 'prescription'; report: unknown; request_id: string; delivery_token: string; email: string }
 export interface ErrorEnvelope { ok: false; request_id: string; contract_version: string; error: { code: ErrorCode; message: string; retryable: boolean; details: unknown[] } }
 
 // Upload rules (contracts/01 §1, app/images/types.py).

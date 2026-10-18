@@ -29,3 +29,5 @@ scripts/shots/
 .env
 .env.*
 !.env.example
+# tracked: public production API origin only (no secrets)
+!.env.production

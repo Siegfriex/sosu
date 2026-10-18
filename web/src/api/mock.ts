@@ -6,7 +6,7 @@
 import type { Answers } from '../data/questions';
 import type { PrescriptionReport, SurveyReport } from '../data/report';
 import { ApiError } from './errors';
-import type { DiagnosisOptions, PrescriptionOptions } from './client';
+import type { DiagnosisOptions, Generated, PrescriptionOptions } from './client';
 
 const wait = (ms: number, signal?: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
@@ -50,7 +50,16 @@ const LONG_PRESCRIPTION: PrescriptionReport = {
 
 export const emailDelivery = true;
 
-export async function generateDiagnosis(answers: Answers, opts: DiagnosisOptions = {}): Promise<SurveyReport> {
+export const emailEnabled = async () => true;
+
+export async function generateDiagnosis(answers: Answers, opts: DiagnosisOptions = {}): Promise<Generated<SurveyReport>> {
+  return { report: await mockDiagnosis(answers, opts), delivery: null };
+}
+export async function generatePrescription(url: string, opts: PrescriptionOptions = { insightImages: [] }): Promise<Generated<PrescriptionReport>> {
+  return { report: await mockPrescription(url, opts), delivery: null };
+}
+
+async function mockDiagnosis(answers: Answers, opts: DiagnosisOptions): Promise<SurveyReport> {
   await wait(2800, opts.signal);
   const fail = knob('fail');
   if (fail === 'timeout' || fail === 'error') throw new ApiError(fail);
@@ -77,7 +86,7 @@ export async function generateDiagnosis(answers: Answers, opts: DiagnosisOptions
   };
 }
 
-export async function generatePrescription(_url: string, opts: PrescriptionOptions = { insightImages: [] }): Promise<PrescriptionReport> {
+async function mockPrescription(_url: string, opts: PrescriptionOptions): Promise<PrescriptionReport> {
   await wait(2600, opts.signal);
   const fail = knob('fail');
   if (fail === 'timeout' || fail === 'error') throw new ApiError(fail);
