@@ -80,6 +80,27 @@
 
 ## 8. 최종 출시 판정
 - **게이트 G1~G12는 모두 PASS다.** G2 사용량과 G3 상한은 오너가 직접 확인한 결과다.
-- **공개 활성화는 실행하지 못했다(BLOCKED).** `vercel env add SOSU_PUBLIC_INFERENCE_ENABLED`를 Claude Code 자동 모드 권한 분류기가 [Feature Flag Writes]로 거부했고, 우회하지 않았다.
+- (15:09 시점) **공개 활성화는 실행하지 못했다(BLOCKED).** → 15:12 오너가 활성화함, §9 참고. `vercel env add SOSU_PUBLIC_INFERENCE_ENABLED`를 Claude Code 자동 모드 권한 분류기가 [Feature Flag Writes]로 거부했고, 우회하지 않았다.
 - 운영은 안전한 503 상태로 남아 있다.
 - 오너가 Handoff §4(env 추가와 Redeploy)를 실행하면 즉시 공개된다. 그 뒤 features 확인과 브라우저 스모크 1건은 요청하면 수행한다.
+
+## 9. 활성화 후 검증 (15:12~15:14 KST)
+
+**판정: PUBLIC READY (활성화 실행·검증 완료)**
+
+오너가 활성화 작업을 직접 수행함.
+- `SOSU_PUBLIC_INFERENCE_ENABLED`를 sosu-py **Production에만** 추가함(env 이름과 target만 확인, 값은 sensitive).
+- `d345e0d`를 Redeploy함. 새 운영 배포 ID는 `dpl_D4KChqjwS8SvSmdDuHu1J7RRuCLM`.
+
+| 점검 | 결과 |
+|---|---|
+| `GET /api/v1/features` | inference **true**, email false, image_storage false, research false, knowledge_version gb2-5edea367, build d345e0d9c67a |
+| `X-SOSU-Build` 헤더 | d345e0d9c67a |
+| 공개 브라우저 진단 1건 (유료, 이미지 없음) | 대상 `https://sosu-rosy.vercel.app`, 경로 `/survey/result`, 38.0s. API 200 ok, `request_id`가 보낸 `X-Request-ID`(`web-f99244f4-7003-4a76-8ed6-d441ace7cff1`)와 일치. 결과 섹션 9개(positioning~finalGuidance) 모두 렌더링. 포지셔닝 근거가 입력한 Q6, Q9, Q17을 인용함. mock 없음 |
+| 브라우저 WAF 처리 (60초 리셋 후) | 빈 제출 3회는 422 `INSUFFICIENT_INPUT`(Gemini 호출 없음), 업로드 화면에 안내 문구 표시. **4번째는 엣지 429**(브라우저에서는 `net::ERR_FAILED`, CORS 없음)였고, 화면은 "요청이 많아요"와 다시 시도 버튼으로 표시됨 |
+| 스크린샷 | `web/scripts/shots/prod-smoke/prod_live_diagnosis.png`, `prod_waf_429.png` (gitignored) |
+
+- 이번 세션에서 실행한 라이브 Gemini 요청은 로컬 스모크 진단 1, 처방 2, 운영 진단 1임.
+  - 로컬 스모크의 provider 호출은 누적 6회.
+  - 운영 진단 1건의 호출 수는 서버 로그로 확인하지 않음. 이미지가 없어 관찰 단계가 생략되므로 합성 1회로 예상함.
+- 롤백 방법은 `SOSU_OWNER_FINAL_HANDOFF.md` §5에 있음: env를 false로 바꾸고 Redeploy. **3d19714로 롤백 금지.**
