@@ -84,3 +84,13 @@ SOSU_E2E_PAID=1 npm run e2e:prod    # +유료 2건 (과금)
 SOSU_E2E_WAF=1 npm run e2e:prod     # +WAF (유료 직후라면 60초 이상 지난 뒤 실행)
 ```
 증거는 `web/scripts/shots/playwright-prod/`(gitignored)에 남는다: report.json, html, ledger.json, live_*.json, 스크린샷.
+
+## 추가 — 제품 사진 3장 라이브 진단 (2026-10-18 19:2x KST, 화면 `aa831a4`, API `22c5e33`)
+- 요청 1건(유료)을 보냈고, 원장 가드로 1건만 나가도록 막아 두었다. request_id는 `web-f22f8835-…`, 결과는 200이고 소요 시간은 55.5초다.
+- 업로드 입력은 `multiple=true`였고, 요청에는 `product_image` 파트가 3개 실렸다.
+- 로그 흐름:
+  1. `visual-observation-v2` 1회로 이미지 3장을 함께 관찰했다(토큰 4,213).
+  2. `diagnosis-v2`가 REPAIRABLE(오류 1건)로 판정됐다.
+  3. `repair-v1`을 거친 뒤 PASS 됐다(`images=3`).
+- 결과 화면의 릴스 유형 라벨은 `유형 1/2/3`으로 나왔다. 화면에서 에러는 없었다.
+- 참고: 운영 라이브 진단은 이번까지 2번 연속 1회 repair를 거쳤다. 기능상 문제는 없지만 provider 호출이 1회 늘어난다.
