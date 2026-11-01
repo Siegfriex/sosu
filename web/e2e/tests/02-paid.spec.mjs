@@ -10,6 +10,8 @@ test.skip(process.env.SOSU_E2E_PAID !== '1', 'billed: set SOSU_E2E_PAID=1 to run
 test.describe.configure({ mode: 'serial', timeout: 240_000 });
 const PY = resolve(ROOT, 'SOSU_py/.venv/bin/python'); // runs the backend's own Q18 checker
 const norm = (s) => String(s).replace(/\s+/g, ' ').trim();
+// Same display rule as web/src/data/evidence.ts: "(q4, q15)" markers are removed, bare "q17" → "17번 문항".
+const shown = (s) => norm(String(s).replace(/\s*[(（]\s*(?:문항\s*)?[qQ]\s*\d{1,2}(?:\s*[,，·/、]\s*(?:[qQ]\s*)?\d{1,2})*\s*[)）]/g, '').replace(/(?<![A-Za-z0-9])[qQ](\d{1,2})(?![0-9])/g, (_, n) => `${Number(n)}번 문항`));
 
 const capture = (page, endpoint) => page.waitForResponse((r) => r.url().startsWith(`${API}/api/v1/${endpoint}`) && r.request().method() === 'POST', { timeout: 200_000 });
 
@@ -36,7 +38,7 @@ test('LIVE diagnosis with product image, Q18=아니요 → 200, rendered, reques
 
   const d = body.data; const text = norm(await page.locator('body').innerText());
   const must = [d.positioning?.summary, ...(d.strengths ?? []).map((s) => s.title), ...(d.final_guidance ?? []).slice(0, 1)].filter(Boolean);
-  expect(must.filter((m) => !text.includes(norm(m)))).toEqual([]);
+  expect(must.filter((m) => !text.includes(shown(m)))).toEqual([]);
   const sections = await page.locator('[data-section]').count();
   record('live_diagnosis_sections', sections);
   expect(sections).toBeGreaterThanOrEqual(9);
@@ -108,7 +110,7 @@ test('LIVE prescription with 3 insight screenshots → 200, rendered, no URL-slu
   const d = body.data; const text = norm(await page.locator('body').innerText());
   const must = [d.prescription?.summary, ...(d.next_actions ?? []).map((a) => a.title)].filter(Boolean);
   expect(must.length).toBeGreaterThan(1);
-  expect(must.filter((m) => !text.includes(norm(m)))).toEqual([]);
+  expect(must.filter((m) => !text.includes(shown(m)))).toEqual([]);
   expect(JSON.stringify(d)).not.toMatch(/E2EPWTEST01/i);
   await page.setViewportSize({ width: 320, height: 900 }); await page.waitForTimeout(200);
   expect(await noOverflow(page)).toEqual({ doc: true, cards: true });
