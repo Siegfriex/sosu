@@ -30,6 +30,15 @@ test('API health + features: inference on, image/research off, email reported, b
   if (EXPECT_BE) expect(EXPECT_BE.startsWith(b.build)).toBe(true);
 });
 
+test('guidebook link: forged or expired token → 410 page, no-store, storage URL never exposed', async ({ request }) => {
+  for (const t of ['1.bad', '1700000000.' + '0'.repeat(64)]) {
+    const r = await request.get(`${API}/api/v1/guidebook?t=${t}`, { maxRedirects: 0 });
+    expect(r.status()).toBe(410);
+    expect(r.headers()['cache-control']).toContain('no-store');
+    expect(await r.text()).not.toMatch(/blob\.vercel-storage\.com/);
+  }
+});
+
 test('CORS preflight from the production origin', async ({ request }) => {
   for (const p of ['diagnosis', 'prescription']) {
     const r = await request.fetch(`${API}/api/v1/${p}`, { method: 'OPTIONS', headers: { Origin: BASE, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'x-request-id' } });

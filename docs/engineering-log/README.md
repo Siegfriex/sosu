@@ -14,6 +14,7 @@
 | Phase 3 | [SOSU_SECURITY_ACTIVATION_MATRIX.md](SOSU_SECURITY_ACTIVATION_MATRIX.md), [SOSU_PHASE3_RELEASE_AUDIT.md](SOSU_PHASE3_RELEASE_AUDIT.md) | 게이트 G1~G12 확인, WAF 설정, 공개 활성화 |
 | Phase 3 | [SOSU_OWNER_FINAL_HANDOFF.md](SOSU_OWNER_FINAL_HANDOFF.md) | 운영자용 안내: 비용 상한, 키 교체, 롤백 절차 |
 | 출시 후 | [SOSU_PROD_E2E_PLAYWRIGHT.md](SOSU_PROD_E2E_PLAYWRIGHT.md) | 운영 환경 Playwright E2E 결과(무료 14건, 라이브 2건, WAF) |
+| 2026-11-01 | [SOSU_2026-11-01_QA.md](SOSU_2026-11-01_QA.md) | 릴스 유형 A~F, 근거 질문 각주, Gmail 리포트 메일과 가이드북 PDF의 QA 체크리스트와 결과 |
 
 이 폴더로 옮기면서 문서 안의 커밋 해시와 경로는 작성 당시 값 그대로 두었습니다. 그 뒤 README와 문서 정리 커밋이 배포되었기 때문에 운영 빌드 SHA는 문서에 적힌 값보다 새 값입니다.
 
@@ -21,7 +22,7 @@
 
 | 항목 | 상태 | 다음 행동 |
 |---|---|---|
-| 리포트 이메일 + 가이드북 PDF 링크 | 코드 배포 완료(2026-11-01 Gmail SMTP 추가). 설정이 없어 **꺼져 있음** | 오너가 `SOSU_py/docs/EMAIL_SETUP_GUIDE.md`(Gmail 앱 비밀번호, Blob, env 6개)를 따라 설정합니다. 진행 상태는 `python3 SOSU_py/scripts/check_email_setup.py` 로 확인합니다 |
+| 리포트 이메일 + 가이드북 PDF 링크 | **2026-11-01 운영 ON** (Gmail SMTP, Vercel Blob) | 새 발신 계정이라 스팸함 분류됨. 앱 비밀번호 교체 권장. 상세는 [QA 문서](SOSU_2026-11-01_QA.md) 3절. 설정 확인: `python3 SOSU_py/scripts/check_email_setup.py` |
 | 메일 화면 고양이 모션 교체 (손·얼굴 분리) | **미착수** | Figma MCP 인증이 완료되지 않음. 디자인은 Figma `BfiDWIgNkLyst263m82VLK` 노드 `46-173`. 현재는 `cat-delivery.png` 한 장에서 앞발 영역을 잘라 움직이는 방식 |
 | 진단 결과가 연속으로 repair 1회를 거침 | 관찰 중 (2026-11-01 로컬 실모델 재현: 원인 후보는 structure 문장의 Q18 얼굴 키워드, 예 '표정') | 운영 라이브 진단 2건이 모두 REPAIRABLE → PASS 였음. 원인 오류 문구는 로그에 남지 않으므로, 필요하면 repair 사유를 로그로 남기도록 추가 |
 
@@ -30,4 +31,6 @@
 - 진단의 추천 릴스 유형이 매번 모델이 지은 자유 이름이었던 문제를 고쳤습니다. 이제 가이드북 2장의 세 축(순서 A/B, 사운드 C/D, 자막 E/F)에서 하나씩 고르고, 화면에는 "추천 조합 · B + D + F"와 축 라벨이 표시됩니다.
 - 백엔드 `SOSU_py@a3254eb`(prompt `diagnosis-v3`), 공개 계약 형태는 그대로입니다.
 - 검증: pytest 428, web verify(e2e 48 · media 6 · adapter 13), integration 25, 운영 Playwright 무료 14. 로컬 실모델 4건에서 입력별 조합 B+D+F / A+C+F / B+C+F, REPAIR_FAILED 0.
-- 메일: Resend가 is-a.dev 같은 무료 서브도메인을 거절해서 Gmail SMTP(앱 비밀번호) 발송기를 추가했습니다(`SOSU_py@d796166`). 설정 절차는 `SOSU_py/docs/EMAIL_SETUP_GUIDE.md`이고, 오너가 env를 넣기 전까지 `SOSU_PUBLIC_EMAIL_ENABLED`는 꺼 둡니다.
+- 메일: Resend가 is-a.dev 같은 무료 서브도메인을 거절해서 Gmail SMTP(앱 비밀번호) 발송기를 추가했고(`SOSU_py@d796166`), 가이드북 PDF를 Vercel Blob에 올려 운영에서 켰습니다. 메일은 가이드북 블록과 장별 읽기 안내로 시작합니다(`SOSU_py@94cf1b1`).
+- 결과지 근거: 본문의 (q번호)를 섹션별 "근거 질문" 각주로 옮겼습니다(화면은 질문 + 내 답, 메일은 질문만).
+- QA 체크리스트와 결과: [SOSU_2026-11-01_QA.md](SOSU_2026-11-01_QA.md)

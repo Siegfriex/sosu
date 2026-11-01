@@ -156,6 +156,12 @@ await check('INT-D1 diagnosis with product image → real HTTP → rendered resu
   const missing = must.filter((m) => !t.includes(norm(m)));
   assertEq(missing, [], 'structured fields not rendered');
   assertEq(['추천 조합 · B + D + F', '유형 B · 완성된 제품을 먼저', '유형 D · 사운드가 약할 경우', '유형 F · '].map((l) => t.includes(l)).concat(t.includes('유형 1'), t.includes('유형 ○')), [true, true, true, true, false, false], 'reel types follow guidebook A~F axes');
+  // QA B2/B4: (qN) markers moved to 근거 질문 footnotes with the user's own answer; guidebook note shown
+  assert(!/\([qQ]\s*\d{1,2}/.test(t), 'inline (qN) marker left in the body');
+  assert(t.includes("*릴스 유형은 가이드북 2장 '실전 릴스 유형' 참고"), 'guidebook note missing');
+  const ev = await page.$$eval('[data-evidence]', (els) => els.map((e) => ({ refs: e.getAttribute('data-evidence'), text: e.textContent })));
+  assert(ev.length >= 1 && ev.every((e) => e.text.includes('근거 질문')), `evidence notes ${JSON.stringify(ev)}`);
+  assert(ev.some((e) => e.text.includes('내 답:')), 'no 내 답 line in evidence notes');
   evidence.push({ id: 'INT-D1', request_id: r.body.request_id, fake: r.fake });
   return `request_id=${r.body.request_id} rendered ${must.length} key fields`;
 });
