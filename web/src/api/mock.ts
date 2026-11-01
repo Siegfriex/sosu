@@ -6,6 +6,7 @@
 import type { Answers } from '../data/questions';
 import type { PrescriptionReport, SurveyReport } from '../data/report';
 import { ApiError } from './errors';
+import { GUIDEBOOK_REEL_NOTE } from '../data/evidence';
 import type { DiagnosisOptions, Generated, PrescriptionOptions } from './client';
 
 const wait = (ms: number, signal?: AbortSignal) =>
@@ -32,7 +33,7 @@ function longSurveyFixture(name: string): SurveyReport {
     reelTypes: [`유형 B · 완성된 제품을 먼저 — 빛을 받은 완성품 3초 후 재료로 전환. ${LONG_PARAGRAPH}`, `유형 D · 사운드가 약할 경우 — 로파이 BGM으로 작업 소리를 대신. ${LONG_PARAGRAPH}`, `유형 F · 자막이나 나레이션이 있는 경우 — 첫 자막 훅과 구매 안내. ${LONG_PARAGRAPH}`],
     reelAxes: ['순서', '사운드', '자막·나레이션'],
     reelCombo: 'B+D+F',
-    guidebookNote: "*릴스 유형은 가이드북 2장 '실전 릴스 유형'(8~11쪽) 참고",
+    guidebookNote: GUIDEBOOK_REEL_NOTE,
     structure: [
       { range: '0~3초', guide: `반짝임 클로즈업으로 시선 고정. ${LONG_PARAGRAPH}` },
       { range: '3~10초', guide: `어떤 제품인지 한 문장 자막. ${LONG_PARAGRAPH}` },
@@ -80,7 +81,7 @@ async function mockDiagnosis(answers: Answers, opts: DiagnosisOptions): Promise<
     reelTypes: ['유형 B · 완성된 제품을 먼저 — 완성품 3초 후 재료로 전환', '유형 D · 사운드가 약할 경우 — BGM으로 작업 소리를 대신', '유형 F · 자막이나 나레이션이 있는 경우 — 자막 훅과 구매 안내'],
     reelAxes: ['순서', '사운드', '자막·나레이션'],
     reelCombo: 'B+D+F',
-    guidebookNote: "*릴스 유형은 가이드북 2장 '실전 릴스 유형'(8~11쪽) 참고",
+    guidebookNote: GUIDEBOOK_REEL_NOTE,
     structure: [
       { range: '0~3초', guide: '반짝임 클로즈업으로 시선 고정' },
       { range: '3~10초', guide: '어떤 제품인지 한 문장 자막' },

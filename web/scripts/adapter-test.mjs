@@ -39,11 +39,29 @@ await check('diagnosis.success → SurveyReport keeps every meaningful field', a
   assert(vm.reelCombo === 'B+D+F' && vm.reelAxes?.join() === '순서,사운드,자막', 'guidebook combo + axes from 유형 A~F names (face_only fixture → voice-free caption label)');
   assertEq(vm.structure, [['0~3초', 'hook_0_3'], ['3~10초', 'body_3_10'], ['10~20초', 'body_10_20'], ['20~27초', 'close_20_27'], ['27~30초', 'cta_27_30']].map(([range, k]) => ({ range, guide: d.structure[k] })), 'structure');
   for (const g of d.final_guidance) assert(vm.finalGuidance.includes(g), `final_guidance missing: ${g}`);
-  assertEq(vm.guidebookNote, undefined, 'guidebookNote not fabricated');
+  assertEq(vm.guidebookNote, "*릴스 유형은 가이드북 2장 '실전 릴스 유형' 참고", 'guidebook note only for 유형 A~F names');
+});
+await check('evidence: (q..) markers stripped and collected; question text + answer labels', async () => {
+  const out = await page.evaluate(async () => {
+    const e = await import('/src/data/evidence.ts');
+    return {
+      a: e.stripRefs('BGM을 깝니다(q4, q15). 끝.'),
+      b: e.stripRefs('q17 답변처럼 완성품 위주(Q14·q15)입니다 (q99)'),
+      c: e.citeSection(['x(q20)', 'y (q15, q20)', 'z']),
+      q: e.questionText(15), q10: e.questionText(10),
+      ans: e.answerText(16, { q16: ['low_conversion', 'low_reach'] }), none: e.answerText(15, {}),
+    };
+  });
+  assertEq(out.a, { text: 'BGM을 깝니다. 끝.', refs: [4, 15] }, 'group');
+  assertEq(out.b.text, '17번 문항 답변처럼 완성품 위주입니다 (q99)', 'bare → 번 문항, unknown q99 kept');
+  assertEq(out.b.refs, [14, 15, 17], 'refs');
+  assertEq(out.c, { texts: ['x', 'y', 'z'], refs: [15, 20] }, 'section');
+  assertEq([out.q, out.q10], ['사람들이 보면 신기해할 만한 제작 과정이 있나요?', '제품을 받은 고객이 어떤 기분을 느꼈으면 좋겠나요?'], 'question text');
+  assertEq([out.ans, out.none], ['구매로 연결되지 않아요, 조회수가 안 나와요', null], 'answer');
 });
 await check('pre-guidebook free-text reel names → no combo/axes (screen falls back to 유형 N)', async () => {
   const vm = await run((d) => { const x = structuredClone(d.data); x.reel_types = x.reel_types.map((t, i) => ({ ...t, name: `자유 이름 ${i}` })); return window.m.adaptDiagnosis(x); }, fixtures.diagnosis);
-  assertEq([vm.reelCombo, vm.reelAxes], [undefined, undefined], 'fallback');
+  assertEq([vm.reelCombo, vm.reelAxes, vm.guidebookNote], [undefined, undefined, undefined], 'fallback');
 });
 await check('prescription.success → PrescriptionReport keeps summary, diagnosis, 4 ordered actions, tone', async () => {
   const vm = await run((d) => window.m.adaptPrescription(d.data), fixtures.prescription);

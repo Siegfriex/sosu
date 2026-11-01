@@ -15,7 +15,7 @@ export interface SurveyReport {
   reelAxes?: [string, string, string];
   /** Guidebook combination, e.g. 'B+D+F' — only when all three names carry a 유형 A~F code. */
   reelCombo?: string;
-  guidebookNote?: string; // mock only — the contract has no such field; hidden when absent
+  guidebookNote?: string; // fixed UI note (data/evidence.ts) for guidebook reel types — not a contract field; hidden when absent
   structure: { range: string; guide: string }[];
   finalGuidance: string; // OPEN L5: section title duplicated in source
 }

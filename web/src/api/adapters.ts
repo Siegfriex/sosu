@@ -6,10 +6,11 @@
 //   priorities (sorted by rank) / reel_types → "title — description" / "name — reason" (+ reelAxes/reelCombo from 유형 A~F names)
 //   structure keys hook_0_3 … cta_27_30 → 0~3초 … 27~30초; final_guidance[] → numbered lines
 //   prescription → summary + diagnosis; next_actions (sorted by order) → "title — description"
-// guidebookNote is never fabricated (no contract field). Shape violations throw ApiError('error').
+// guidebookNote is a fixed UI note shown only for guidebook reel types (유형 A~F names), never model text. Shape violations throw ApiError('error').
 import type { PrescriptionReport, SurveyReport } from '../data/report';
 import type { DiagnosisReportV1, PrescriptionReportV1 } from './contract';
 import { ApiError } from './errors';
+import { GUIDEBOOK_REEL_NOTE } from '../data/evidence';
 
 const fail = (what: string): never => { throw new ApiError('error', `malformed report: ${what}`, { code: 'MALFORMED_RESPONSE', retryable: true }); };
 const str = (v: unknown, what: string): string => (typeof v === 'string' ? v : fail(what));
@@ -62,7 +63,7 @@ export function adaptDiagnosis(raw: unknown): SurveyReport {
     fonts: { title: str(fonts.title, 'fonts.title'), subtitle: str(fonts.subtitle, 'fonts.subtitle'), reason: str(fonts.reason, 'fonts.reason') },
     priorities: priorities.slice(0, 3) as [string, string, string],
     reelTypes: reelTypes.slice(0, 3) as [string, string, string],
-    ...(guide ? { reelAxes: guide.axes, reelCombo: guide.combo } : {}),
+    ...(guide ? { reelAxes: guide.axes, reelCombo: guide.combo, guidebookNote: GUIDEBOOK_REEL_NOTE } : {}),
     structure: STRUCTURE_KEYS.map(([k, range]) => ({ range, guide: str(structure[k], `structure.${k}`) })),
     finalGuidance: strs(d.final_guidance, 'final_guidance').map((g, i) => `${i + 1}. ${g}`).join('\n'),
   };

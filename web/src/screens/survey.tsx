@@ -13,7 +13,8 @@ import { SECTIONS, STEP_SECTIONS, type AnswerValue } from '../data/questions';
 import { fileStore, generationTicket, INTERRUPTED_MESSAGE, LOST_FILES_MESSAGE, surveyRoute, useEmailAvailability, useGuidebookIncluded, useWorkflows, type SurveyStatus } from '../state/workflows';
 import { ContentCard, Divider, Screen, SectionHeader } from '../components/shell';
 import { Button, InlineMessage, QuestionBlock } from '../components/controls';
-import { DeliverySuccess, EmailDeliveryForm, ErrorState, FileUploader, LoadingState, ReportBrandTable, ReportSection, type DeliveryFormState } from '../components/blocks';
+import { DeliverySuccess, EmailDeliveryForm, ErrorState, EvidenceNote, FileUploader, LoadingState, ReportBrandTable, ReportSection, type DeliveryFormState } from '../components/blocks';
+import { citeSection } from '../data/evidence';
 
 const TITLE = '소규모 수공예 브랜드 문진표';
 
@@ -144,30 +145,41 @@ export function SurveyResult() {
   const r = survey.result;
   useEffect(() => { if (!r) navigate(surveyRoute.UPLOAD, { replace: true }); }, [r, navigate]);
   if (!r) return null;
+  // Inline "(q15, q20)" markers are removed from the body; each section lists them as a 근거 질문 footnote.
+  const note = (refs: number[]) => (refs.length ? <EvidenceNote refs={refs} answers={survey.answers} /> : undefined);
+  const pos = citeSection([r.positioning, r.positioningRationale ?? '']);
+  const strengths = citeSection([r.strengths]);
+  const target = citeSection([r.target]);
+  const tone = citeSection([r.tone]);
+  const fonts = citeSection([r.fonts.title, r.fonts.subtitle, r.fonts.reason ?? '']);
+  const priorities = citeSection(r.priorities);
+  const reels = citeSection(r.reelTypes);
+  const structure = citeSection(r.structure.map((x) => x.guide));
+  const finalGuidance = citeSection([r.finalGuidance]);
   return (
     <Screen theme="dark" workflow="survey" status="result" tight>
       <h1 className="report-title t-display">릴스 진단서</h1>
       <ReportBrandTable brand={r.brand} />
-      <ReportSection title="추천 포지셔닝" emphasis="accent" fieldKey="positioning">
-        {r.positioningRationale ? <div className="kv"><div>{r.positioning}</div><div><div className="kv__k">근거</div><div>{r.positioningRationale}</div></div></div> : r.positioning}
+      <ReportSection title="추천 포지셔닝" emphasis="accent" fieldKey="positioning" footnote={note(pos.refs)}>
+        {r.positioningRationale ? <div className="kv"><div>{pos.texts[0]}</div><div><div className="kv__k">근거</div><div>{pos.texts[1]}</div></div></div> : pos.texts[0]}
       </ReportSection>
-      <ReportSection title="핵심 강점" fieldKey="strengths">{r.strengths}</ReportSection>
-      <ReportSection title="메인 타깃" fieldKey="target">{r.target}</ReportSection>
-      <ReportSection title="톤앤매너" fieldKey="tone">{r.tone}</ReportSection>
-      <ReportSection title="추천 폰트" fieldKey="fonts">
-        <div className="kv"><div><div className="kv__k">제목(썸네일&카피)</div><div>{r.fonts.title}</div></div><div><div className="kv__k">자막</div><div>{r.fonts.subtitle}</div></div>{r.fonts.reason && <div><div className="kv__k">선택 이유</div><div>{r.fonts.reason}</div></div>}</div>
+      <ReportSection title="핵심 강점" fieldKey="strengths" footnote={note(strengths.refs)}>{strengths.texts[0]}</ReportSection>
+      <ReportSection title="메인 타깃" fieldKey="target" footnote={note(target.refs)}>{target.texts[0]}</ReportSection>
+      <ReportSection title="톤앤매너" fieldKey="tone" footnote={note(tone.refs)}>{tone.texts[0]}</ReportSection>
+      <ReportSection title="추천 폰트" fieldKey="fonts" footnote={note(fonts.refs)}>
+        <div className="kv"><div><div className="kv__k">제목(썸네일&카피)</div><div>{fonts.texts[0]}</div></div><div><div className="kv__k">자막</div><div>{fonts.texts[1]}</div></div>{r.fonts.reason && <div><div className="kv__k">선택 이유</div><div>{fonts.texts[2]}</div></div>}</div>
       </ReportSection>
-      <ReportSection title="릴스에서 가장 먼저 보여줘야 할 것" emphasis="accent" fieldKey="priorities">
-        <div className="kv">{r.priorities.map((p, i) => <div key={i}><div className="kv__k">{i + 1}순위</div><div>{p}</div></div>)}</div>
+      <ReportSection title="릴스에서 가장 먼저 보여줘야 할 것" emphasis="accent" fieldKey="priorities" footnote={note(priorities.refs)}>
+        <div className="kv">{priorities.texts.map((p, i) => <div key={i}><div className="kv__k">{i + 1}순위</div><div>{p}</div></div>)}</div>
       </ReportSection>
-      <ReportSection title="추천 릴스 유형 조합" fieldKey="reelTypes">
-        <div className="kv">{r.reelCombo && <div className="t-strong">{`추천 조합 · ${r.reelCombo.split('+').join(' + ')}`}</div>}{r.reelTypes.map((t, i) => <div key={i}><div className="kv__k">{r.reelAxes?.[i] ?? `유형 ${i + 1}`}</div><div>{t}</div></div>)}{r.guidebookNote && <div className="t-strong">{r.guidebookNote}</div>}</div>
+      <ReportSection title="추천 릴스 유형 조합" fieldKey="reelTypes" footnote={note(reels.refs)}>
+        <div className="kv">{r.reelCombo && <div className="t-strong">{`추천 조합 · ${r.reelCombo.split('+').join(' + ')}`}</div>}{reels.texts.map((t, i) => <div key={i}><div className="kv__k">{r.reelAxes?.[i] ?? `유형 ${i + 1}`}</div><div>{t}</div></div>)}{r.guidebookNote && <div className="t-strong">{r.guidebookNote}</div>}</div>
       </ReportSection>
-      <ReportSection title="추천 릴스 구조" fieldKey="structure">
-        <div className="kv">{r.structure.map((s) => <div key={s.range}><div className="kv__k">{s.range}</div><div>{s.guide}</div></div>)}</div>
+      <ReportSection title="추천 릴스 구조" fieldKey="structure" footnote={note(structure.refs)}>
+        <div className="kv">{r.structure.map((s, i) => <div key={s.range}><div className="kv__k">{s.range}</div><div>{structure.texts[i]}</div></div>)}</div>
       </ReportSection>
       {/* OPEN L5: duplicate title in source — kept verbatim */}
-      <ReportSection title="릴스에서 가장 먼저 보여줘야 할 것" fieldKey="finalGuidance">{r.finalGuidance}</ReportSection>
+      <ReportSection title="릴스에서 가장 먼저 보여줘야 할 것" fieldKey="finalGuidance" footnote={note(finalGuidance.refs)}>{finalGuidance.texts[0]}</ReportSection>
       <Button onClick={() => navigate(surveyRoute.DELIVERY)}>진단서 받기</Button>
     </Screen>
   );

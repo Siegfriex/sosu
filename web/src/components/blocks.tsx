@@ -5,6 +5,8 @@ import folderSvg from '../assets/folder.svg?raw';
 import catLoading from '../assets/cat-loading.png';
 import catDelivery from '../assets/cat-delivery.png';
 import { STAGES, type StageIndex } from '../data/report';
+import { answerText, questionText } from '../data/evidence';
+import type { Answers } from '../data/questions';
 import { fileStore, type FileMeta } from '../state/workflows';
 import { Button, EmailField, InlineMessage } from './controls';
 import { isValidEmail } from '../api/validation';
@@ -151,12 +153,30 @@ export function ErrorState({ workflow, kind, onRetry, onReset, onBack }: { workf
 }
 
 /* ---------- Report (30:474 / 30:488 / 30:489) ---------- */
-export function ReportSection({ title, emphasis = 'default', fieldKey, children }: { title: string; emphasis?: 'default' | 'accent'; fieldKey?: string; children: ReactNode }) {
+export function ReportSection({ title, emphasis = 'default', fieldKey, footnote, children }: { title: string; emphasis?: 'default' | 'accent'; fieldKey?: string; footnote?: ReactNode; children: ReactNode }) {
   return (
     <section className={`report-card${emphasis === 'accent' ? ' report-card--accent' : ''}`} data-field={fieldKey} data-section={fieldKey}>
       <div className="report-card__header"><h3 className="report-card__title t-strong">{title}</h3><div className="report-card__rule" /></div>
       <div className="report-card__body t-body-2">{children}</div>
+      {footnote}
     </section>
+  );
+}
+
+/** "근거 질문" footnote: the survey questions a section cites, with the user's own answer when known. */
+export function EvidenceNote({ refs, answers }: { refs: number[]; answers?: Answers }) {
+  const items = refs.map((n) => ({ n, q: questionText(n), a: answerText(n, answers) })).filter((x) => x.q);
+  if (!items.length) return null;
+  return (
+    <div className="report-evidence t-helper" data-evidence={items.map((x) => x.n).join(',')}>
+      <div className="report-evidence__title">근거 질문</div>
+      {items.map((x) => (
+        <div key={x.n} className="report-evidence__item">
+          <div>{`${x.n}. ${x.q}`}</div>
+          {x.a && <div className="report-evidence__answer">{`내 답: ${x.a}`}</div>}
+        </div>
+      ))}
+    </div>
   );
 }
 
