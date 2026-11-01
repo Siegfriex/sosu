@@ -3,7 +3,7 @@
 //   positioning.summary → positioning, positioning.rationale → positioningRationale
 //   strengths[] → "① title — description" lines; target → summary + description
 //   tone → keywords line + description; fonts.reason → fonts.reason
-//   priorities (sorted by rank) / reel_types → "title — description" / "name — reason"
+//   priorities (sorted by rank) / reel_types → "title — description" / "name — reason" (+ reelAxes/reelCombo from 유형 A~F names)
 //   structure keys hook_0_3 … cta_27_30 → 0~3초 … 27~30초; final_guidance[] → numbered lines
 //   prescription → summary + diagnosis; next_actions (sorted by order) → "title — description"
 // guidebookNote is never fabricated (no contract field). Shape violations throw ApiError('error').
@@ -18,6 +18,19 @@ const arr = (v: unknown, what: string, min = 0): unknown[] => (Array.isArray(v) 
 const strs = (v: unknown, what: string): string[] => arr(v, what).map((x, i) => str(x, `${what}[${i}]`));
 const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
 const joinTD = (title: string, desc: string) => (desc ? `${title} — ${desc}` : title);
+
+// Guidebook reel types (SOSU_py app/domain/reel_types.py): names are fixed labels "유형 X · …",
+// one per axis — 순서 A/B, 사운드 C/D, 자막 E/F. Older free-text names fall back to "유형 N".
+const REEL_AXIS: Record<string, string> = { A: '순서', B: '순서', C: '사운드', D: '사운드', E: '자막', F: '자막' };
+export function reelGuide(names: string[]): { axes: [string, string, string]; combo: string } | null {
+  const codes = names.map((n) => /^유형 ([A-F]) · /.exec(n)?.[1]);
+  if (codes.length !== 3 || codes.some((c) => !c)) return null;
+  // Caption axis reads '자막·나레이션' (guidebook 2-3) unless the label is the voice-free variant (Q18).
+  const axes = codes.map((c, i) => (REEL_AXIS[c as string] === '자막' && names[i].includes('나레이션') ? '자막·나레이션' : REEL_AXIS[c as string]));
+  if (new Set(axes.map((a) => a.slice(0, 2))).size !== 3) return null;
+  if (codes.join('') !== [...(codes as string[])].sort().join('')) return null; // server emits axis order 순서→사운드→자막
+  return { axes: axes as [string, string, string], combo: (codes as string[]).join('+') };
+}
 
 export const STRUCTURE_KEYS: [keyof DiagnosisReportV1['structure'], string][] = [
   ['hook_0_3', '0~3초'], ['body_3_10', '3~10초'], ['body_10_20', '10~20초'], ['close_20_27', '20~27초'], ['cta_27_30', '27~30초'],
@@ -35,7 +48,9 @@ export function adaptDiagnosis(raw: unknown): SurveyReport {
   const priorities = arr(d.priorities, 'priorities', 3).map((x, i) => obj(x, `priorities[${i}]`))
     .sort((a, b) => Number(a.rank) - Number(b.rank))
     .map((o) => joinTD(str(o.title, 'priority.title'), str(o.description, 'priority.description')));
-  const reelTypes = arr(d.reel_types, 'reel_types', 3).map((x, i) => { const o = obj(x, `reel_types[${i}]`); return joinTD(str(o.name, 'reel_type.name'), str(o.reason, 'reel_type.reason')); });
+  const reelItems = arr(d.reel_types, 'reel_types', 3).slice(0, 3).map((x, i) => obj(x, `reel_types[${i}]`));
+  const reelTypes = reelItems.map((o) => joinTD(str(o.name, 'reel_type.name'), str(o.reason, 'reel_type.reason')));
+  const guide = reelGuide(reelItems.map((o) => str(o.name, 'reel_type.name')));
   const toneKeywords = strs(tone.keywords, 'tone.keywords');
   return {
     brand: { name: str(brand.name, 'brand.name'), material: str(brand.material, 'brand.material'), product: str(brand.product, 'brand.product'), keywords: strs(brand.keywords, 'brand.keywords').join(', ') },
@@ -47,6 +62,7 @@ export function adaptDiagnosis(raw: unknown): SurveyReport {
     fonts: { title: str(fonts.title, 'fonts.title'), subtitle: str(fonts.subtitle, 'fonts.subtitle'), reason: str(fonts.reason, 'fonts.reason') },
     priorities: priorities.slice(0, 3) as [string, string, string],
     reelTypes: reelTypes.slice(0, 3) as [string, string, string],
+    ...(guide ? { reelAxes: guide.axes, reelCombo: guide.combo } : {}),
     structure: STRUCTURE_KEYS.map(([k, range]) => ({ range, guide: str(structure[k], `structure.${k}`) })),
     finalGuidance: strs(d.final_guidance, 'final_guidance').map((g, i) => `${i + 1}. ${g}`).join('\n'),
   };

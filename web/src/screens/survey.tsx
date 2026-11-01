@@ -161,7 +161,7 @@ export function SurveyResult() {
         <div className="kv">{r.priorities.map((p, i) => <div key={i}><div className="kv__k">{i + 1}순위</div><div>{p}</div></div>)}</div>
       </ReportSection>
       <ReportSection title="추천 릴스 유형 조합" fieldKey="reelTypes">
-        <div className="kv">{r.reelTypes.map((t, i) => <div key={i}><div className="kv__k">{`유형 ${i + 1}`}</div><div>{t}</div></div>)}{r.guidebookNote && <div className="t-strong">{r.guidebookNote}</div>}</div>
+        <div className="kv">{r.reelCombo && <div className="t-strong">{`추천 조합 · ${r.reelCombo.split('+').join(' + ')}`}</div>}{r.reelTypes.map((t, i) => <div key={i}><div className="kv__k">{r.reelAxes?.[i] ?? `유형 ${i + 1}`}</div><div>{t}</div></div>)}{r.guidebookNote && <div className="t-strong">{r.guidebookNote}</div>}</div>
       </ReportSection>
       <ReportSection title="추천 릴스 구조" fieldKey="structure">
         <div className="kv">{r.structure.map((s) => <div key={s.range}><div className="kv__k">{s.range}</div><div>{s.guide}</div></div>)}</div>

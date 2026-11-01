@@ -11,6 +11,10 @@ export interface SurveyReport {
   fonts: { title: string; subtitle: string; reason?: string }; // reason: contract fonts.reason
   priorities: [string, string, string];
   reelTypes: [string, string, string];
+  /** Guidebook axis label per reelTypes entry ('순서' | '사운드' | '자막'); absent for pre-guidebook free-text names. */
+  reelAxes?: [string, string, string];
+  /** Guidebook combination, e.g. 'B+D+F' — only when all three names carry a 유형 A~F code. */
+  reelCombo?: string;
   guidebookNote?: string; // mock only — the contract has no such field; hidden when absent
   structure: { range: string; guide: string }[];
   finalGuidance: string; // OPEN L5: section title duplicated in source

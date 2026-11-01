@@ -155,7 +155,7 @@ await check('INT-D1 diagnosis with product image → real HTTP → rendered resu
   const must = [d.positioning?.summary, ...(d.strengths ?? []).map((s) => s.title), ...(d.final_guidance ?? []).slice(0, 1)].filter(Boolean);
   const missing = must.filter((m) => !t.includes(norm(m)));
   assertEq(missing, [], 'structured fields not rendered');
-  assertEq(['유형 1', '유형 2', '유형 3'].map((l) => t.includes(l)).concat(t.includes('유형 ○')), [true, true, true, false], 'reel type labels numbered');
+  assertEq(['추천 조합 · B + D + F', '유형 B · 완성된 제품을 먼저', '유형 D · 사운드가 약할 경우', '유형 F · '].map((l) => t.includes(l)).concat(t.includes('유형 1'), t.includes('유형 ○')), [true, true, true, true, false, false], 'reel types follow guidebook A~F axes');
   evidence.push({ id: 'INT-D1', request_id: r.body.request_id, fake: r.fake });
   return `request_id=${r.body.request_id} rendered ${must.length} key fields`;
 });

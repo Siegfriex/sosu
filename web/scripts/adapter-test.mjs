@@ -36,9 +36,14 @@ await check('diagnosis.success → SurveyReport keeps every meaningful field', a
   const byRank = [...d.priorities].sort((a, b) => a.rank - b.rank);
   byRank.forEach((p, i) => assert(vm.priorities[i].includes(p.title) && vm.priorities[i].includes(p.description), `priority ${i + 1}`));
   d.reel_types.forEach((t, i) => assert(vm.reelTypes[i].includes(t.name) && vm.reelTypes[i].includes(t.reason), `reel type ${i}`));
+  assert(vm.reelCombo === 'B+D+F' && vm.reelAxes?.join() === '순서,사운드,자막', 'guidebook combo + axes from 유형 A~F names (face_only fixture → voice-free caption label)');
   assertEq(vm.structure, [['0~3초', 'hook_0_3'], ['3~10초', 'body_3_10'], ['10~20초', 'body_10_20'], ['20~27초', 'close_20_27'], ['27~30초', 'cta_27_30']].map(([range, k]) => ({ range, guide: d.structure[k] })), 'structure');
   for (const g of d.final_guidance) assert(vm.finalGuidance.includes(g), `final_guidance missing: ${g}`);
   assertEq(vm.guidebookNote, undefined, 'guidebookNote not fabricated');
+});
+await check('pre-guidebook free-text reel names → no combo/axes (screen falls back to 유형 N)', async () => {
+  const vm = await run((d) => { const x = structuredClone(d.data); x.reel_types = x.reel_types.map((t, i) => ({ ...t, name: `자유 이름 ${i}` })); return window.m.adaptDiagnosis(x); }, fixtures.diagnosis);
+  assertEq([vm.reelCombo, vm.reelAxes], [undefined, undefined], 'fallback');
 });
 await check('prescription.success → PrescriptionReport keeps summary, diagnosis, 4 ordered actions, tone', async () => {
   const vm = await run((d) => window.m.adaptPrescription(d.data), fixtures.prescription);
