@@ -41,6 +41,13 @@ await check('diagnosis.success → SurveyReport keeps every meaningful field', a
   for (const g of d.final_guidance) assert(vm.finalGuidance.includes(g), `final_guidance missing: ${g}`);
   assertEq(vm.guidebookNote, "*릴스 유형은 가이드북 2장 '실전 릴스 유형' 참고", 'guidebook note only for 유형 A~F names');
 });
+await check('every multi-select question tells the user its limit (*최대 N개 선택), incl. Q9', async () => {
+  const missing = await page.evaluate(async () => {
+    const { QUESTIONS } = await import('/src/data/questions.ts');
+    return QUESTIONS.filter((q) => q.type === 'choice' && q.selection === 'multiple' && !q.label.includes(`*최대 ${q.maxSelection}개 선택`)).map((q) => q.id);
+  });
+  assertEq(missing, [], 'multi-select labels without the limit hint');
+});
 await check('evidence: (q..) markers stripped and collected; question text + answer labels', async () => {
   const out = await page.evaluate(async () => {
     const e = await import('/src/data/evidence.ts');

@@ -58,7 +58,7 @@ export const QUESTIONS: Question[] = [
   { id: 'q08', number: 8, section: 2, type: 'text', label: '8. 내 제품을 가장 좋아할 사람은 누구인가요?' },
   {
     id: 'q09', number: 9, section: 2, type: 'choice',
-    label: '9. 고객은 왜 이 제품을 사고 싶어 할까요?',
+    label: '9. 고객은 왜 이 제품을 사고 싶어 할까요?\n*최대 3개 선택',
     options: opts([['aesthetic', '예뻐서'], ['specialness', '특별해서'], ['self_reward', '나를 위해'], ['gift', '선물하려고'], ['memories', '추억을 간직하려고'], ['space_decor', '공간을 꾸미려고'], ['self_expression', '나만의 것을 갖고 싶어서']]),
     layout: 'grid2', selection: 'multiple', maxSelection: 3, // contract: max 3
   },

@@ -3,7 +3,9 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import folderSvg from '../assets/folder.svg?raw';
 import catLoading from '../assets/cat-loading.png';
-import catDelivery from '../assets/cat-delivery.png';
+import catHead from '../assets/cat-delivery-head.png';
+import catPawL from '../assets/cat-delivery-paw-l.png';
+import catPawR from '../assets/cat-delivery-paw-r.png';
 import { STAGES, type StageIndex } from '../data/report';
 import { answerText, questionText } from '../data/evidence';
 import type { Answers } from '../data/questions';
@@ -117,18 +119,19 @@ export function LoadingState({ workflow }: { workflow: 'survey' | 'prescription'
 }
 
 /* ---------- ErrorState (28:557) ---------- */
-// Kneading cat built from one drawing: body + each front paw as clip-path layers of the same image.
-// Paws poke down alternately (anticipation → fast press → hold → eased return); body leans into each press.
-// Fill colour == dark page background, so the seam under a moving paw never shows. Static under prefers-reduced-motion.
+// Kneading cat from the owner's motion drawing (모션용_소수.svg, 2026-11-02): head and each front paw are separate
+// layers on the same square canvas (split by transparency, the drawing's -5.9° tilt baked in, padded so no motion
+// is clipped). Each paw moves as a whole shape — no clip-path cut-outs; the head leans into each press.
+// Static under prefers-reduced-motion.
 export function PokingCat({ className = '' }: { className?: string }) {
   return (
     <div className={`poker ${className}`.trim()} aria-hidden>
-      <img className="poker__body" src={catDelivery} alt="" />
-      <img className="poker__paw poker__paw--l" src={catDelivery} alt="" />
-      <img className="poker__paw poker__paw--r" src={catDelivery} alt="" />
-      <svg className="poker__fx" viewBox="0 0 720 720" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="6">
-        <g className="poker__tap poker__tap--l"><path d="M228 668 l-14 14" /><path d="M262 676 v18" /><path d="M300 668 l14 12" /></g>
-        <g className="poker__tap poker__tap--r"><path d="M470 700 l-14 12" /><path d="M512 706 v14" /><path d="M556 698 l14 12" /></g>
+      <img className="poker__body" src={catHead} alt="" />
+      <img className="poker__paw poker__paw--l" src={catPawL} alt="" />
+      <img className="poker__paw poker__paw--r" src={catPawR} alt="" />
+      <svg className="poker__fx" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="0.9">
+        <g className="poker__tap poker__tap--l"><path d="M16 92.5 l-2.2 2.2" /><path d="M24.3 93.5 v2.8" /><path d="M32.6 92.5 l2.2 2.2" /></g>
+        <g className="poker__tap poker__tap--r"><path d="M69.5 90 l-2.2 2.2" /><path d="M77.2 91 v2.8" /><path d="M84.9 90 l2.2 2.2" /></g>
       </svg>
     </div>
   );
