@@ -49,12 +49,41 @@ test('LIVE diagnosis with product image, Q18=아니요 → 200, rendered, reques
   for (const w of [320, 1440]) { await page.setViewportSize({ width: w, height: 900 }); await page.waitForTimeout(200); expect(await noOverflow(page), `@${w}`).toEqual({ doc: true, cards: true }); await page.screenshot({ path: `${SHOTS}/live_diagnosis_${w}.png`, fullPage: true }); }
   await page.setViewportSize({ width: 390, height: 860 });
 
-  // email is disabled in production: delivery shows "준비 중", /delivered never claims success
+  // guidebook reel types: combination line, axis labels, guidebook note; (qN) markers moved to 근거 질문 footnotes
+  const reel = page.locator('[data-section="reelTypes"]');
+  await expect(reel).toContainText(/추천 조합 · [AB] \+ [CD] \+ [EF]/);
+  await expect(reel).toContainText("*릴스 유형은 가이드북 2장 '실전 릴스 유형' 참고");
+  await expect(reel).not.toContainText('나레이션'); // Q18=아니요 → voice-free labels
+  expect(text).not.toMatch(/\([qQ]\s*\d{1,2}/);
+  const notes = await page.locator('[data-evidence]').count();
+  record('live_diagnosis_evidence_notes', notes);
+  expect(notes).toBeGreaterThanOrEqual(1);
+
+  // email: production state decides. Enabled → send only when SOSU_E2E_EMAIL_TO is set (1 real e-mail).
+  const features = await (await page.request.get(`${API}/api/v1/features`)).json();
+  record('features_email', features.email);
   await btn(page, '진단서 받기').click(); await expectPath(page, '/survey/delivery');
-  await expect(page.locator('form[data-delivery="unavailable"] [data-delivery-unavailable]')).toBeVisible({ timeout: 10_000 });
-  await page.screenshot({ path: `${SHOTS}/live_delivery_unavailable.png` });
-  await page.goto('/survey/delivered'); await page.waitForTimeout(500);
-  expect(new URL(page.url()).pathname).not.toMatch(/delivered$/);
+  if (!features.email?.enabled) {
+    await expect(page.locator('form[data-delivery="unavailable"] [data-delivery-unavailable]')).toBeVisible({ timeout: 10_000 });
+    await page.goto('/survey/delivered'); await page.waitForTimeout(500);
+    expect(new URL(page.url()).pathname).not.toMatch(/delivered$/);
+  } else {
+    await expect(page.locator('form[data-delivery="available"]')).toBeVisible({ timeout: 10_000 });
+    if (features.guidebook?.enabled) await expect(page.locator('[data-delivery-guidebook]')).toBeVisible();
+    const to = process.env.SOSU_E2E_EMAIL_TO;
+    if (to) {
+      await page.getByLabel('이메일 주소').fill(to);
+      const mailP = page.waitForResponse((r) => r.url().startsWith(`${API}/api/v1/report-email`) && r.request().method() === 'POST', { timeout: 60_000 });
+      await btn(page, '메일로 진단서 받기').click();
+      const mail = await mailP;
+      const mb = await mail.json().catch(() => null);
+      record('live_report_email', { status: mail.status(), data: mb?.data ?? null, error: mb?.error ?? null });
+      expect(mail.status(), JSON.stringify(mb?.error)).toBe(200);
+      expect(['sent', 'duplicate']).toContain(mb.data.status);
+      await expectPath(page, '/survey/delivered', 20_000);
+    }
+  }
+  await page.screenshot({ path: `${SHOTS}/live_delivery.png` });
   expect(errs).toEqual([]);
 });
 
@@ -84,7 +113,8 @@ test('LIVE prescription with 3 insight screenshots → 200, rendered, no URL-slu
   await page.setViewportSize({ width: 320, height: 900 }); await page.waitForTimeout(200);
   expect(await noOverflow(page)).toEqual({ doc: true, cards: true });
   await btn(page, '처방전 받기').click(); await expectPath(page, '/prescription/delivery');
-  await expect(page.locator('form[data-delivery="unavailable"]')).toBeVisible({ timeout: 10_000 });
+  const pf = await (await page.request.get(`${API}/api/v1/features`)).json();
+  await expect(page.locator(`form[data-delivery="${pf.email?.enabled ? 'available' : 'unavailable'}"]`)).toBeVisible({ timeout: 10_000 });
   expect(errs).toEqual([]);
 });
 
