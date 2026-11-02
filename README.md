@@ -155,4 +155,4 @@ sosu/
 
 ## License
 
-코드는 MIT © 2026 Siegfriex. 가이드북 원문 PDF는 저작물이라 이 저장소에 포함하지 않습니다.
+코드는 MIT © 2026 Siegfriex.Dev류지환 가이드북 원문 PDF는 저작물이라 이 저장소에 포함하지 않습니다.
