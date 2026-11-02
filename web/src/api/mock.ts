@@ -31,7 +31,7 @@ function longSurveyFixture(name: string): SurveyReport {
     fonts: { title: 'Pretendard SemiBold (썸네일&카피) — 자간 -2%, 두 줄 이내, 배경 대비 확보를 위해 반투명 박스 사용 권장', subtitle: 'SUITE Regular (자막) — 한 줄 15자 이내, 화면 하단 1/4 지점 고정' },
     priorities: [`빛을 받아 반짝이는 완성품 클로즈업. ${LONG_PARAGRAPH}`, `제작 과정 중 가장 손이 많이 가는 장면. ${LONG_PARAGRAPH}`, `착용/배치된 실제 사용 장면. ${LONG_PARAGRAPH}`],
     reelTypes: [`유형 B · 완성된 제품을 먼저 — 빛을 받은 완성품 3초 후 재료로 전환. ${LONG_PARAGRAPH}`, `유형 D · 사운드가 약할 경우 — 로파이 BGM으로 작업 소리를 대신. ${LONG_PARAGRAPH}`, `유형 F · 자막이나 나레이션이 있는 경우 — 첫 자막 훅과 구매 안내. ${LONG_PARAGRAPH}`],
-    reelAxes: ['순서', '사운드', '자막·나레이션'],
+    reelAxes: ['순서', '사운드', '자막'],
     reelCombo: 'B+D+F',
     guidebookNote: GUIDEBOOK_REEL_NOTE,
     structure: [
@@ -79,7 +79,7 @@ async function mockDiagnosis(answers: Answers, opts: DiagnosisOptions): Promise<
     fonts: { title: 'Pretendard SemiBold (썸네일&카피)', subtitle: 'SUITE Regular (자막)' },
     priorities: ['빛을 받아 반짝이는 완성품 클로즈업', '제작 과정 중 가장 손이 많이 가는 장면', '착용/배치된 실제 사용 장면'],
     reelTypes: ['유형 B · 완성된 제품을 먼저 — 완성품 3초 후 재료로 전환', '유형 D · 사운드가 약할 경우 — BGM으로 작업 소리를 대신', '유형 F · 자막이나 나레이션이 있는 경우 — 자막 훅과 구매 안내'],
-    reelAxes: ['순서', '사운드', '자막·나레이션'],
+    reelAxes: ['순서', '사운드', '자막'],
     reelCombo: 'B+D+F',
     guidebookNote: GUIDEBOOK_REEL_NOTE,
     structure: [

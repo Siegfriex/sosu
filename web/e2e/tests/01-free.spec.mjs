@@ -23,7 +23,7 @@ test('API health + features: inference on, image/research off, email reported, b
   const f = await request.get(`${API}/api/v1/features`);
   const b = await f.json();
   record('features', { ...b, x_sosu_build: f.headers()['x-sosu-build'] });
-  expect(b).toMatchObject({ contract_version: '1.0', inference: { enabled: true }, image_storage: { enabled: false }, research: { enabled: false }, knowledge_version: 'gb2-957e8dc0' });
+  expect(b).toMatchObject({ contract_version: '1.0', inference: { enabled: true }, image_storage: { enabled: false }, research: { enabled: false }, knowledge_version: 'gb2-49e0fee4' });
   expect(typeof b.email.enabled).toBe('boolean'); // e-mail is owner-configured (Gmail SMTP), on since 2026-11-01
   expect(b.build).toMatch(/^[0-9a-f]{12}$/);
   expect(f.headers()['x-sosu-build']).toBe(b.build);
